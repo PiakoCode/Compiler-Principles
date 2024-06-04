@@ -1,0 +1,34 @@
+# 基于LLVM
+BasedOnStyle: LLVM
+
+# 设置缩进是 4 空格
+IndentWidth: 4
+
+# 使用空格
+UseTab: Never
+
+AccessModifierOffset: -4
+
+# 允许排序#include
+SortIncludes: Never
+
+# 指针和引用的对齐: Left, Right, Middle
+PointerAlignment: Right
+
+# 允许重新排版注释
+ReflowComments: true
+
+# 对齐连续的尾随的注释
+AlignTrailingComments: true
+
+# 连续声明时，对齐所有声明的变量名
+AlignConsecutiveDeclarations: true
+
+# 总是在template声明后换行
+AlwaysBreakTemplateDeclarations: Yes
+
+# 连续空行的最大数量
+MaxEmptyLinesToKeep: 1
+
+# false表示函数实参要么都在同一行，要么都各自一行
+BinPackArguments: false
