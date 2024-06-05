@@ -17,6 +17,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # include_directories("${CMAKE_SOURCE_DIR}/third_party/googletest/googletest/include")
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/src)
 add_subdirectory(src)
 add_subdirectory(test)
 
