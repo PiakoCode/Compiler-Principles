@@ -19,3 +19,9 @@ std::string ReadFile(const std::string& filePath);
  * @return std::vector<std::string> 拆分后的字符串数组
  */
 std::vector<std::string> SplitString(const std::string& str, const std::string& delimiter);
+
+/**
+ * @brief
+ * 读取字符
+ */
+char GetChar();
