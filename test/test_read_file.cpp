@@ -2,8 +2,12 @@
 #include <iostream>
 
 int main() {
-    auto s =  read_file("./readme.md");
+    auto s = ReadFile("./readme.md");
 
-    std::cout<<s<<"\n";
+    auto vec = SplitString(s, "\n");
+
+    for (const auto &value : vec) {
+        std::cout << value << "\n";
+    }
     return 0;
 }

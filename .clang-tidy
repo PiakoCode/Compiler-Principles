@@ -31,37 +31,7 @@ HeaderFilterRegex: '^.*\.hpp$'
 FormatStyle: file
 AnalyzeTemporaryDtors: false
 # check https://clang.llvm.org/extra/clang-tidy/checks/readability/identifier-naming.html
-# CheckOptions:
-#   - key:             readability-identifier-naming.ClassCase
-#     value:           CamelCase
-#   - key:             readability-identifier-naming.ClassConstantCase
-#     value:           aNy_CasE
-#   - key:             readability-identifier-naming.ClassConstantPrefix
-#     value:           ''
-#   - key:             readability-identifier-naming.EnumCase
-#     value:           CamelCase
-#   - key:             readability-identifier-naming.EnumConstantCase
-#     value:           aNy_CasE
-#   - key:             readability-identifier-naming.FunctionCase
-#     value:           aNy_CasE
-#   - key:             readability-identifier-naming.GlobalConstantCase
-#     value:           UPPER_CASE
-#   - key:             readability-identifier-naming.MemberCase
-#     value:           aNy_CasE
-#   - key:             readability-identifier-naming.NamespaceCase
-#     value:           aNy_CasE
-#   - key:             readability-identifier-naming.PublicMemberSuffix
-#     value:           ''
-#   - key:             readability-identifier-naming.PrivateMemberSuffix
-#     value:           ''
-#   - key:             readability-identifier-naming.ProtectedMemberSuffix
-#     value:           ''
-#   - key:             readability-identifier-naming.MethodCase
-#     value:           aNy_CasE
-#   - key:             readability-identifier-naming.ParameterCase
-#     value:           aNy_CasE
-#   - key:             readability-identifier-naming.VariableCase
-#     value:           aNy_CasE
+
 
 CheckOptions:
   - { key: readability-identifier-naming.ClassCase, value: CamelCase }
