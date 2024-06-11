@@ -4,13 +4,14 @@
 
 
 int main() {
-   auto s = ReadFile("/home/Piako/code/编译原理课程设计/Compiler_Principles/readme.md");
+   auto s = ReadFile("样例程序.pl");
 
    auto vec = SplitString(s, "\n");
 
    for (const auto &value : vec) {
        std::cout << value << "\n";
    }
-
+    Getch();
+    std::cout <<ch<<"\n";
     return 0;
 }

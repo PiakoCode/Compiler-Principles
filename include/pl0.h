@@ -56,7 +56,7 @@ enum IdType {
 
 /**
  * @brief
- *
+ * 中间代码指令
  */
 enum OpCode {
     LIT, // 将常数置于栈顶
@@ -89,10 +89,14 @@ enum OprCode {
     GEQ, // 大于等于
 };
 
+/**
+ * @brief
+ * 指令类型
+ */
 struct Instruction {
-    int f; // function code
-    int l; // level
-    int a; // displacement address
+    OpCode f; // 功能
+    int    l; // 层次差
+    int    a; // 数值/地址
 };
 
 struct Comtab {
@@ -108,13 +112,19 @@ struct Mask {
     int         address;
 };
 
-static char ch = 0;          // 读取到的字符
-static int  cc = 0;          // char count
-static int  line_length = 0; // line length
-static int  error_cnt = 0;
-static int  current_instruction_index = 0; // 当前指令的索引
-static char line[1000] = {};
+extern int  sym;         //
+extern char ch;          // 最近一次从文件中读出的字符
+extern int  cc;          // 在这一行的位置
+extern int  line_length; // 行长度
+extern int  error_cnt;   //
+extern int cx; // 代码分配指针，代码生成模块总在cx所指的位置生成新代码
+extern char line[100]; // 行缓冲区
 
+extern int line_num; // 行号
+
+extern std::vector<std::string> texts;
+
+// 错误信息
 const static std::string error_msg[] = {
     "",
     "Found ':=' when expecting '='.",
@@ -131,8 +141,16 @@ const static std::string error_msg[] = {
  */
 void Error(int n);
 
+/**
+ * @brief
+ * 读取字符
+ */
 void Getch();
 
-static FILE *infile;
+/**
+ * @brief Get the Sym object
+ * 获取下一个token
+ */
+void GetSym();
 
 #endif
