@@ -162,7 +162,7 @@ void ConstDeclaration()
            GetSym();
 
            if(sym == SYM_NUMBER) { // sym为数字记录到符号表
-              // TODO 将数字记录到符号表
+              // TODO 将数字记录到符号表     enter(constant);
 
               GetSym();
            } else {
@@ -182,7 +182,7 @@ void ConstDeclaration()
  */
 void VarDeclaration() {
     if(sym == SYM_IDENTIFIER) {
-        //TODO 将标识符记录到符号表中
+        //TODO 将标识符记录到符号表中   enter(variable);
         GetSym();
     } else {
         Error(4);
@@ -207,16 +207,31 @@ void Factor(unsigned long fsys) {
     while (sym & face_begsys) { // 当sym在face_bgsys中
        if(sym == SYM_IDENTIFIER) // 为标识符
         {
-            // TODO 查找符号表中对应的索引值
+            // TODO 查找符号表中对应的索引值    i = position(id);
 
             if(i == 0) { // 为找到标识符
                 Error(11);
             } else {
                 // TODO switch语句判断是否符号类型
+//                switch(table[i].kind)
+//                {
+//                case constant: //常量
+//                    gen(lit, 0, table[i].val);
+//                    break;
+//
+//                case variable: //变量
+//                    gen(lod, lev-table[i].level, table[i].addr);
+//                    break;
+//
+//                case proc:     //过程
+//                    error(21);
+//                    break;
+//                }
             }
             GetSym();
         } else if( sym == SYM_NUMBER){ // 为数字
             // TODO 运用中间代码函数写入到中间代码数组 gen(lit,0,num)
+
            GetSym();
         } else if(sym == SYM_LPAREN) { // 为左括号
            GetSym();
@@ -242,9 +257,10 @@ void Term(unsigned long fsys) {
         GetSym();
         Factor(fsys | SYM_TIMES | SYM_SLASH);
         if(mulop == SYM_TIMES) { // 若为*
-            //TODO 生成乘法的中间代码
+            //TODO 生成乘法的中间代码    gen(opr,0,4);
+
         } else {
-            // TODO 生成除法的中间代码
+            // TODO 生成除法的中间代码   gen(opr,0,5);
         }
    }
 
@@ -262,7 +278,7 @@ void Expression(unsigned long fsys) {
         Term(fsys | SYM_PLUS | SYM_MINUS);
 
         if(addop == SYM_MINUS) { // 若为符号
-           // TODO 生成负号的中间代码
+           // TODO 生成负号的中间代码    gen(opr,0,1);  负号，取反运算
         }
    } else {
        Term(fsys | SYM_PLUS | SYM_MINUS);
@@ -275,9 +291,9 @@ void Expression(unsigned long fsys) {
       Term(fsys | SYM_PLUS | SYM_MINUS);
 
       if(addop == SYM_PLUS) {
-          // TODO 生成加法的中间代码
+          // TODO 生成加法的中间代码  gen(opr,0,2);          // 加
       } else {
-          // TODO 生成减法的中间代码
+          // TODO 生成减法的中间代码   gen(opr,0,3);          // 减
       }
    }
 }
@@ -289,7 +305,9 @@ void Condition(unsigned  long fsys) {
     if(sym == SYM_ODD) { // 一元运算符
         GetSym();
         Expression(fsys);
-        // TODO 生成运算符的中间代码
+        // TODO 生成运算符的中间代码  gen(opr, 0, 6);
+
+
     } else {  // 二元运算符
         Expression(fsys | SYM_EQ | SYM_NEQ | SYM_GTR | SYM_LES | SYM_LEQ | SYM_GEQ);
         if(!(sym &(SYM_EQ | SYM_NEQ | SYM_GTR | SYM_LES | SYM_LEQ | SYM_GEQ))) {
@@ -299,7 +317,34 @@ void Condition(unsigned  long fsys) {
             GetSym();
             Expression(fsys); // 处理新的正负号
 
-            // TODO 生成对应的中间代码
+            // TODO switch生成对应的中间代码
+//            switch(relop)
+//            {
+//            case eql:
+//                gen(opr, 0, 8);
+//                break;
+//
+//            case neq:
+//                gen(opr, 0, 9);
+//                break;
+//
+//            case lss:
+//                gen(opr, 0, 10);
+//                break;
+//
+//            case geq:
+//                gen(opr, 0, 11);
+//                break;
+//
+//            case gtr:
+//                gen(opr, 0, 12);
+//                break;
+//
+//            case leq:
+//                gen(opr, 0, 13);
+//                break;
+//            }
+
         }
     }
 }
@@ -310,7 +355,7 @@ void statement(unsigned long fsys) {
     long i,cx1,cx2;
 
     if(sym == SYM_IDENTIFIER) { // 标识符
-        // TODO 查找id在符号表对应的索引
+        // TODO 查找id在符号表对应的索引   i=position(id);
 
         if(i == 0) {
             Error(11); // 未定义错误
@@ -330,18 +375,20 @@ void statement(unsigned long fsys) {
         Expression(fsys);
 
         if(i != 0) {  // 产生一个sto代码
-            // TODO  生成sto中间代码
+            // TODO  生成sto中间代码  gen(sto,lev-table[i].level,table[i].addr);
         }
     } else if(sym == SYM_CALL) { // call语句
         GetSym();
         if(sym != SYM_IDENTIFIER) {
             Error(14);
         } else {
-            // TODO id在符号表中的位置
+            // TODO id在符号表中的位置  i=position(id);
+
             if(i == 0) {
                 Error(11);
             } else if(table[i].kind == SYM_PROCEDURE) { // 若为过程
                 // TODO 生成中间代码   gen(cal,lev-table[i].level,table[i].addr);
+
             } else {
                 Error(15);
             }
