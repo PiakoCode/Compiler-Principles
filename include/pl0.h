@@ -129,10 +129,39 @@ extern int     cc;          // 在这一行中的位置
 extern int     line_length; // 行长度
 extern int     error_cnt;   //
 extern int cx; // 代码分配指针，代码生成模块总在cx所指的位置生成新代码
+extern int tx; // 符号表分配指针，符号表模块总在tx所指的位置生成新符号
 
-extern int line_num; // 行号
-extern std::vector<Instruction> codes; // 中间代码列表
-extern std::vector<std::string> texts; // 程序文本
+extern std::string id;    // 最近一次读入的id
+extern int         num;   // 最近一次读入的数字
+extern int         level; // 层次
+extern int         dx;    // 层次中的偏移地址
+
+extern int                      line_num; // 行号
+extern std::vector<Instruction> codes;    // 中间代码列表
+extern std::vector<std::string> texts;    // 程序文本
+
+// 声明符号集合
+const static std::set<SymType> declare_sym = {
+    SYM_CONST,
+    SYM_VAR,
+    SYM_PROCEDURE,
+
+};
+
+// 表达式开始符号集合
+const static std::set<SymType> start_sym = {
+    SYM_BEGIN,
+    SYM_CALL,
+    SYM_WHILE,
+    SYM_IF
+};
+
+// factor开始符号集合
+const static std::set<SymType> factor_sym = {
+    SYM_IDENTIFIER,
+    SYM_NUMBER,
+    SYM_LPAREN
+};
 
 // 中间代码
 const static std::map<OpCode, std::string> op_code_str = {
@@ -215,16 +244,38 @@ void GetSym();
 void Test(unsigned long s1, unsigned long s2, long n);
 
 /**
- * @brief 
+ * @brief
  * 中间代码生成
+ * @param x 中间指令
+ * @param a
+ * @param b
  */
-
 void Gen(Instruction x, int a, int b);
+
+/**
+ * @brief
+ * 符号表
+ * @param k 符号类型
+ */
+void Entry(IdType k);
+
+/**
+ * @brief
+ * 查找符号在符号表中的位置
+ * @param id 符号名
+ * @return int 符号表中的位置
+ */
+int Position(const std::string &name);
 
 /**
  * 常量声明
  */
 void ConstDeclaration();
+
+
+
+void Block(std::set<SymType> syms);
+
 
 /**
  * 变量声明

@@ -1,5 +1,6 @@
 #include "pl0.h"
 #include "utils.h"
+#include <algorithm>
 #include <iostream>
 
 int main(int argc, char *argv[]) {
@@ -17,20 +18,34 @@ int main(int argc, char *argv[]) {
         path = std::string(argv[1]);
     }
 
-    // 读取程序文本内容
-    texts = SplitString(ReadFile(path), "\n"); // 不会保留\n
+    // // 读取程序文本内容
+    // texts = SplitString(ReadFile(path), "\n"); // 不会保留\n
 
-    // 输出程序文本内容
-    for (auto const &value : texts) {
-        std::cout << value << "\\\n";
-    }
-    std::cout << "\n";
+    // // 输出程序文本内容
+    // for (auto const &value : texts) {
+    //     std::cout << value << "\\\n";
+    // }
+    // std::cout << "\n";
 
-    std::cout << "===========\n";
+    // std::cout << "===========\n";
 
-    while (true) {
-        Getch();
-    }
+    // while (true) {
+    //     Getch();
+    // }
+
+    ch = ' ';
+    GetSym();
+
+    std::set<SymType> tmp;
+    std::set_union(declare_sym.begin(),
+                   declare_sym.end(),
+                   start_sym.begin(),
+                   start_sym.end(),
+                   tmp);
+    std::set_union(
+        tmp.begin(), tmp.end(), declare_sym.begin(), declare_sym.end(), tmp);
+
+    Block(tmp);
 
     return 0;
 }

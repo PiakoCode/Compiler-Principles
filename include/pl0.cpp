@@ -3,6 +3,8 @@
 #include "utils.h"
 #include <cctype>
 #include <cstdio>
+
+#include <set>
 #include <vector>
 
 SymType sym = SYM_NULL;  // 最近一次的token类型
@@ -11,6 +13,12 @@ int     cc = 0;          // 在这一行的位置
 int     line_length = 0; // 行长度
 int     error_cnt = 0;
 int cx = 0; // 代码分配指针，代码生成模块总在cx所指的位置生成新代码
+
+int tx = 0; // 符号表分配指针，符号表模块总在tx所指的位置生成新符号
+
+int num = 0;   // 最近一次读入的数字
+int level = 0; // 层次
+int dx = 0;    // 层次中的偏移地址
 
 int                      line_num; // 行号
 std::vector<Instruction> codes{};
@@ -153,13 +161,39 @@ void Gen(OpCode x, int a, int b) {
 }
 
 /**
- * @brief 
+ * @brief
  * 符号表
  */
+void Entry(IdType k) {
+    tx++;
+    tables.push_back({id, k, 0, 0, 0});
 
+    switch (k) {
 
+    case ID_CONSTANT: // 常量
+        tables[tx].value = num;
+        break;
 
+    case ID_VARIABLE: // 变量
+        tables[tx].level = level;
+        tables[tx].address = dx;
+        dx++;
+        break;
 
+    case ID_PROCEDURE: // 过程
+        tables[tx].level = level;
+        break;
+    }
+}
+
+int Position(const std::string &name) {
+    for (int i = 0; i < tx; i++) {
+        if (tables[i].name == name) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 /**
  * 常量声明
@@ -169,15 +203,14 @@ void ConstDeclaration() {
         GetSym();
         if (sym == SYM_EQ || sym == SYM_BECOMES) // sym为等号或赋值号
         {
-            if (sym == = SYM_BECOMES) { // 赋值号报错
-                Error(1)
+            if (sym == SYM_BECOMES) { // 赋值号报错
+                Error(1);
             }
 
             GetSym();
 
             if (sym == SYM_NUMBER) { // sym为数字记录到符号表
-                // TODO 将数字记录到符号表     enter(constant);
-
+                Entry(ID_CONSTANT);
                 GetSym();
             } else {
                 Error(2);
@@ -188,6 +221,82 @@ void ConstDeclaration() {
     } else {
         Error(4);
     }
+}
+
+void Block(std::set<SymType> syms) {
+
+    long tx0;
+    long cx0;
+    long tx1;
+    long dx1;
+
+    dx = 3;
+    // 地址寄存器给出每层局部量当前已分配到的相对位置
+    // 置初始值为 3 的原因是：每一层最开始的位置有三个空间用于存放
+    // 静态链 SL、动态链 DL 和 返回地址 RA
+
+    tx0 = tx;                // 记录本层开始时符号表的位置
+    tables[tx].address = cx; // 符号表记下当前层代码的开始地址
+
+    Gen(JMP, 0, 0); // block开始时首先写下一句跳转指令，地址到后面再补
+
+    do {
+        if (sym == SYM_CONST) { // 常量
+            GetSym();
+            do {
+                ConstDeclaration();        // 常量声明
+                while (sym == SYM_COMMA) { // 多个常量声明
+                    GetSym();
+                    ConstDeclaration();
+                }
+
+                if (sym == SYM_SEMICOLON) { // 分号
+                    GetSym();
+                } else {
+                    Message("5");
+                }
+
+            } while (sym == SYM_IDENTIFIER);
+        }
+
+        if (sym == SYM_VAR) { // 变量
+            GetSym();
+            do {
+                // TODO:变量声明
+
+                while (sym == SYM_COMMA) { // 多个变量声明
+                    GetSym();
+                    // TODO:变量声明
+                }
+
+                if (sym == SYM_SEMICOLON) {
+                    GetSym();
+                } else {
+                    Message("5");
+                }
+
+            } while (sym == SYM_IDENTIFIER);
+        }
+
+        if (sym == SYM_PROCEDURE) { // 过程
+            GetSym();
+            do {
+                // TODO:过程声明
+
+                while (sym == SYM_COMMA) { // 多个过程声明
+                    GetSym();
+                    // TODO:过程声明
+                }
+
+                if (sym == SYM_SEMICOLON) {
+                    GetSym();
+                } else {
+                    Message("5");
+                }
+            }while(true);
+        }
+
+    } while (true);
 }
 
 
@@ -253,7 +362,7 @@ void Factor(unsigned long fsys) {
            if(sym == SYM_RPAREN) {
                GetSym();
            } else {
-               Error(22)
+               Error(22);
            }
         }
         Test(fsys,SYM_LPAREN,23); // 一个因子处理完毕，遇到的token应在fsys集合中
@@ -373,7 +482,7 @@ void statement(unsigned long fsys) {
 
         if(i == 0) {
             Error(11); // 未定义错误
-        } else if(table[i].kind != SYM_VAR) { // 为非变量
+        } else if(tables[i].kind != SYM_VAR) { // 为非变量
             Error(12);
             i = 0;
         }
@@ -400,7 +509,7 @@ void statement(unsigned long fsys) {
 
             if(i == 0) {
                 Error(11);
-            } else if(table[i].kind == SYM_PROCEDURE) { // 若为过程
+            } else if(tables[i].kind == SYM_PROCEDURE) { // 若为过程
                 // TODO 生成中间代码   gen(cal,lev-table[i].level,table[i].addr);
 
             } else {
