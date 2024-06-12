@@ -131,7 +131,7 @@ extern int     error_cnt;   //
 extern int cx; // 代码分配指针，代码生成模块总在cx所指的位置生成新代码
 
 extern int line_num; // 行号
-
+extern std::vector<Instruction> codes; // 中间代码列表
 extern std::vector<std::string> texts; // 程序文本
 
 // 中间代码
@@ -213,6 +213,13 @@ void GetSym();
  * 判断单词是否匹配
  */
 void Test(unsigned long s1, unsigned long s2, long n);
+
+/**
+ * @brief 
+ * 中间代码生成
+ */
+
+void Gen(Instruction x, int a, int b);
 
 /**
  * 常量声明

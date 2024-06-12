@@ -12,8 +12,8 @@ int     line_length = 0; // 行长度
 int     error_cnt = 0;
 int cx = 0; // 代码分配指针，代码生成模块总在cx所指的位置生成新代码
 
-int line_num; // 行号
-
+int                      line_num; // 行号
+std::vector<Instruction> codes{};
 std::vector<std::string> texts{};
 std::vector<Table>       tables{};
 
@@ -143,34 +143,48 @@ void Test(unsigned long s1, unsigned long s2, int n) {
     }
 }
 
+/**
+ * @brief
+ * 中间代码生成
+ */
+void Gen(OpCode x, int a, int b) {
+    codes.push_back({x, a, b});
+    cx++;
+}
+
+/**
+ * @brief 
+ * 符号表
+ */
+
+
 
 
 
 /**
  * 常量声明
  */
-void ConstDeclaration()
-{
-    if( sym == SYM_IDENTIFIER) { // 如果是标识符
-       GetSym();
-       if(sym == SYM_EQ || sym == SYM_BECOMES) // sym为等号或赋值号
-       {
-           if(sym === SYM_BECOMES) { // 赋值号报错
-               Error(1)
-           }
+void ConstDeclaration() {
+    if (sym == SYM_IDENTIFIER) { // 如果是标识符
+        GetSym();
+        if (sym == SYM_EQ || sym == SYM_BECOMES) // sym为等号或赋值号
+        {
+            if (sym == = SYM_BECOMES) { // 赋值号报错
+                Error(1)
+            }
 
-           GetSym();
+            GetSym();
 
-           if(sym == SYM_NUMBER) { // sym为数字记录到符号表
-              // TODO 将数字记录到符号表     enter(constant);
+            if (sym == SYM_NUMBER) { // sym为数字记录到符号表
+                // TODO 将数字记录到符号表     enter(constant);
 
-              GetSym();
-           } else {
-               Error(2);
-           }
-       } else {
-           Error(3);
-       }
+                GetSym();
+            } else {
+                Error(2);
+            }
+        } else {
+            Error(3);
+        }
     } else {
         Error(4);
     }
@@ -447,7 +461,4 @@ void statement(unsigned long fsys) {
     }
     Test(fsys,0,19);
 }
-
-
-
 
