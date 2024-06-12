@@ -525,7 +525,7 @@ void statement(std::set<SymType> fsys) {
         }
     } else if (sym == SYM_IF) { // 若为if语句
         GetSym();
-        Condition(fsys | SYM_THEN | SYM_DO);
+        Condition(MergeSet(fsys, CreateSet(SYM_THEN, SYM_DO)));
 
         if (sym == SYM_THEN) {
             GetSym();
@@ -536,10 +536,10 @@ void statement(std::set<SymType> fsys) {
         // TODO 生成中间代码  gen(jpc,0,0);
 
         statement(fsys); // 后面一个stament
-        code[cx1].a = cx;
+        codes[cx1].a = cx;
     } else if (sym == SYM_BEGIN) { // beign语句
         GetSym();
-        statement(fsys | SYM_SEMICOLON | SYM_END);
+        statement(MergeSet(fsys, CreateSet(SYM_SEMICOLON, SYM_END)));
         while ((sym == SYM_SEMICOLON) || (sym & SYM_END)) { // 处理分号和语句
             if (sym == SYM_SEMICOLON)                       // 分号
             {
@@ -547,7 +547,7 @@ void statement(std::set<SymType> fsys) {
             } else {
                 Error(10);
             }
-            statement(fsys | SYM_SEMICOLON | SYM_END);
+            statement(MergeSet(fsys, CreateSet(SYM_SEMICOLON, SYM_END)));
         }
 
         if (sym == SYM_END) {
@@ -558,7 +558,7 @@ void statement(std::set<SymType> fsys) {
     } else if (sym == SYM_WHILE) { // while语句
         cx1 = cx;                  // 记录中间代码起始指针
         GetSym();
-        Condition(fsys | SYM_DO);
+        Condition(MergeSet(fsys, CreateSet(SYM_DO)));
         cx2 = cx; // 记录中间代码位置，要放退出地址
 
         // TODO  gen(jpc,0,0);
@@ -568,11 +568,11 @@ void statement(std::set<SymType> fsys) {
         } else {
             Error(18);
         }
-        statement(fsys) // 后面是stmt
+        statement(fsys); // 后面是stmt
 
             // TODO gen(jmp,0,cx1);  循环跳转
 
-            code[cx2]
+            codes[cx2]
                 .a = cx; // 将退出地址补上
     }
     Test(fsys, std::set<SymType>{}, 19);
