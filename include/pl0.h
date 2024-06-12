@@ -152,4 +152,9 @@ void Getch();
  */
 void GetSym();
 
+/**
+ * 判断单词是否匹配
+ */
+void Test(unsigned long s1, unsigned long s2, long n);
+
 #endif

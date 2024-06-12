@@ -125,3 +125,22 @@ void GetSym() {
         }
     }
 }
+
+
+// 测试当前单词是否合法
+void Test(unsigned long s1, unsigned long s2, long n) {
+   if(!(sym & s1))  {  // sym不在s1中
+        Error(n);
+        s1 = s1 | s2; // 将s2补充到s1中
+        while (!(sym & s1)) { // 找到下一个合法字符
+           GetSym();
+        }
+   }
+}
+
+// 符号表
+void Enter(IdType k) {
+
+}
+
+
