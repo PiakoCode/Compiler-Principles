@@ -140,7 +140,7 @@ void GetSym() {
 }
 
 // 测试当前单词是否合法
-void Test(std::set<SymType> s1,std::set<SymType> s2, int n) {
+void Test(std::set<SymType> s1, std::set<SymType> s2, int n) {
     if (!IsInSet(sym, s1)) { // sym不在s1中
         Error(n);
         s1 = MergeSet(s1, s2);      // 将s2补充到s1中
@@ -303,7 +303,7 @@ void Block(std::set<SymType> syms) {
  */
 void VarDeclaration() {
     if (sym == SYM_IDENTIFIER) {
-        // TODO 将标识符记录到符号表中   
+        // TODO 将标识符记录到符号表中
         Entry(ID_VARIABLE);
         GetSym();
     } else {
@@ -321,10 +321,10 @@ void VarDeclaration() {
 void Factor(std::set<SymType> fsys) {
     long i;
     Test(factor_sym, fsys, 24); // 检查当前token是否在factor_sym集合中
-                                 // 若不合法，抛错误，并通过fsys集合恢复护法处理
+                                // 若不合法，抛错误，并通过fsys集合恢复护法处理
 
-    while (IsInSet(sym, factor_sym)) {    // 当sym在face_bgsys中
-        if (sym == SYM_IDENTIFIER) // 为标识符
+    while (IsInSet(sym, factor_sym)) { // 当sym在face_bgsys中
+        if (sym == SYM_IDENTIFIER)     // 为标识符
         {
             // TODO 查找符号表中对应的索引值    i = position(id);
 
@@ -354,7 +354,7 @@ void Factor(std::set<SymType> fsys) {
             GetSym();
         } else if (sym == SYM_LPAREN) { // 为左括号
             GetSym();
-            Expression(SetAdd(fsys, SYM_RPAREN));
+            Expression(MergeSet(fsys, CreateSet(SYM_RPAREN)));
             if (sym == SYM_RPAREN) {
                 GetSym();
             } else {
@@ -367,20 +367,21 @@ void Factor(std::set<SymType> fsys) {
             }
         }
         Test(fsys,
-             SYM_LPAREN,
+             CreateSet(SYM_LPAREN),
              23); // 一个因子处理完毕，遇到的token应在fsys集合中
     }
 }
 
-void Term(unsigned long fsys) {
-    unsigned long mulop;
-    Factor(fsys | SYM_TIMES | SYM_SLASH); // 判断*、/
+void Term(std::set<SymType> fsys) {
+    SymType mulop;
+    Factor(MergeSet(fsys, CreateSet(SYM_TIMES, SYM_SLASH))); // 判断*、/
 
     while (sym == SYM_TIMES || sym == SYM_SLASH) { // 处理乘除法
 
         mulop = sym; // 保留当前运算符
         GetSym();
-        Factor(fsys | SYM_TIMES | SYM_SLASH);
+        Factor(MergeSet(fsys, CreateSet(SYM_TIMES, SYM_SLASH)));
+
         if (mulop == SYM_TIMES) { // 若为*
             // TODO 生成乘法的中间代码    gen(opr,0,4);
 
@@ -394,25 +395,25 @@ void Term(unsigned long fsys) {
  * exp 处理
  */
 void Expression(std::set<SymType> fsys) {
-    unsigned long addop;
+    SymType addop;
     if (sym == SYM_PLUS || sym == SYM_MINUS) { // 处理正负号
         addop = sym;                           // 保存当前符号
                                                // 存正负号
         GetSym();
-        Term(fsys | SYM_PLUS | SYM_MINUS);
+        Term(MergeSet(fsys, CreateSet(SYM_PLUS, SYM_MINUS)));
 
         if (addop == SYM_MINUS) { // 若为符号
             // TODO 生成负号的中间代码    gen(opr,0,1);  负号，取反运算
         }
     } else {
-        Term(fsys | SYM_PLUS | SYM_MINUS);
+        Term(MergeSet(fsys, CreateSet(SYM_PLUS, SYM_MINUS)));
     }
 
     while (sym == SYM_PLUS || sym == SYM_MINUS) { // 处理加减
         addop = sym;
         GetSym();
 
-        Term(fsys | SYM_PLUS | SYM_MINUS);
+        Term(MergeSet(fsys, CreateSet(SYM_PLUS, SYM_MINUS)));
 
         if (addop == SYM_PLUS) {
             // TODO 生成加法的中间代码  gen(opr,0,2);          // 加
@@ -424,7 +425,7 @@ void Expression(std::set<SymType> fsys) {
 
 // cond 处理
 
-void Condition(unsigned long fsys) {
+void Condition(std::set<SymType> fsys) {
     unsigned long relop;
     if (sym == SYM_ODD) { // 一元运算符
         GetSym();
@@ -432,10 +433,14 @@ void Condition(unsigned long fsys) {
         // TODO 生成运算符的中间代码  gen(opr, 0, 6);
 
     } else { // 二元运算符
-        Expression(fsys | SYM_EQ | SYM_NEQ | SYM_GTR | SYM_LES | SYM_LEQ |
-                   SYM_GEQ);
-        if (!(sym &
-              (SYM_EQ | SYM_NEQ | SYM_GTR | SYM_LES | SYM_LEQ | SYM_GEQ))) {
+        Expression(MergeSet(
+            fsys,
+            CreateSet(SYM_EQ, SYM_NEQ, SYM_GTR, SYM_LES, SYM_LEQ, SYM_GEQ)));
+        if (!(IsInSet(
+                sym,
+                CreateSet(
+                    SYM_EQ, SYM_NEQ, SYM_GTR, SYM_LES, SYM_LEQ, SYM_GEQ)))) {
+
             Error(20);
         } else {
             relop = sym; // 保存当前运算符
@@ -475,7 +480,7 @@ void Condition(unsigned long fsys) {
 
 // 声明处理
 
-void statement(unsigned long fsys) {
+void statement(std::set<SymType> fsys) {
     long i, cx1, cx2;
 
     if (sym == SYM_IDENTIFIER) { // 标识符

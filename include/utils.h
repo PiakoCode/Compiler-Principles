@@ -57,3 +57,26 @@ std::set<T> SetAdd(const std::set<T> &a, T &b) {
     c.insert(b);
     return c;
 }
+
+
+/**
+ * @brief Create a Set object
+ * 创建set
+ * @tparam T 
+ * @param a 
+ * @return std::set<T> 
+ */
+template <typename T>
+std::set<T> CreateSet(const T& a) {
+    std::set<T> b;
+    b.insert(a);
+    return b;
+}
+
+template <typename T,typename...Args>
+std::set<T> CreateSet(const T& a,const Args &... args) {
+    std::set<T> b;
+    b.insert(a);
+    b = MergeSet(b, CreateSet(args...));
+    return b;
+}
