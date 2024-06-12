@@ -138,9 +138,36 @@ void Test(unsigned long s1, unsigned long s2, long n) {
    }
 }
 
-// 符号表
-void Enter(IdType k) {
 
+/**
+ * 常量声明
+ */
+void ConstDeclaration()
+{
+    if( sym == SYM_IDENTIFIER) { // 如果是标识符
+       GetSym();
+       if(sym == SYM_EQ || sym == SYM_BECOMES) // sym为等号或赋值号
+       {
+           if(sym === SYM_BECOMES) { // 赋值号报错
+               Error(1)
+           }
+
+           GetSym();
+
+           if(sym == SYM_NUMBER) { // sym为数字记录到符号表
+              // TODO 将数字记录到符号表
+
+              GetSym();
+           } else {
+               Error(2);
+           }
+       } else {
+           Error(3);
+       }
+    } else {
+        Error(4);
+    }
 }
+
 
 

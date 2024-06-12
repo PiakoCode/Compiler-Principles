@@ -123,6 +123,7 @@ extern int line_num; // 行号
 
 extern std::vector<std::string> texts;
 
+
 // 错误信息
 const static std::string error_msg[] = {
     "",
@@ -157,4 +158,8 @@ void GetSym();
  */
 void Test(unsigned long s1, unsigned long s2, long n);
 
+/**
+ * 常量声明
+ */
+void ConstDeclaration();
 #endif
