@@ -123,6 +123,8 @@ extern int line_num; // 行号
 
 extern std::vector<std::string> texts;
 
+//extern unsigned long face_begsys; // factor开始符号集合
+
 
 // 错误信息
 const static std::string error_msg[] = {
@@ -162,4 +164,14 @@ void Test(unsigned long s1, unsigned long s2, long n);
  * 常量声明
  */
 void ConstDeclaration();
+
+/**
+ * 变量声明
+ */
+void VarDeclaration();
+
+/**
+ * exp 处理
+ */
+void Expression(unsigned long);
 #endif
