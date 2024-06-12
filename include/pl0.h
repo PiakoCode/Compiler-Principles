@@ -1,6 +1,8 @@
 #pragma once
 
+#include <map>
 #include <new>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -69,6 +71,15 @@ enum OpCode {
     NOP, // 空操作
 };
 
+/*  lit 0, a : load constant a
+    opr 0, a : execute operation a
+    lod l, a : load variable l, a
+    sto l, a : store variable l, a
+    cal l, a : call procedure a at level l
+    Int 0, a : increment t-register by a
+    jmp 0, a : jump to a
+    jpc 0, a : jump conditional to a       */
+
 /**
  * @brief
  * 运算操作
@@ -99,18 +110,18 @@ struct Instruction {
     int    a; // 数值/地址
 };
 
-struct Comtab {
-    std::string name;
-    int         kind;
-    int         value;
+/**
+ * @brief
+ * 符号表
+ */
+struct Table {
+    std::string name;    // 符号名
+    IdType      kind;    // 符号类型
+    int         value;   // 符号值
+    int         level;   // 层差/偏移地址
+    int         address; // 地址
 };
-
-struct Mask {
-    std::string name;
-    int         kind;
-    int         level;
-    int         address;
-};
+extern std::vector<Table> tables; // 符号表
 
 extern SymType sym;         // 最近一次的token类型
 extern char    ch;          // 最近一次从文件中读出的字符
@@ -121,7 +132,50 @@ extern int cx; // 代码分配指针，代码生成模块总在cx所指的位置
 
 extern int line_num; // 行号
 
-extern std::vector<std::string> texts;
+extern std::vector<std::string> texts; // 程序文本
+
+// 中间代码
+const static std::map<OpCode, std::string> op_code_str = {
+    {LIT, "LIT"},
+    {LOD, "LOD"},
+    {STO, "STO"},
+    {CAL, "CAL"},
+    {INT, "INT"},
+    {JMP, "JMP"},
+    {JPC, "JPC"},
+    {NOP, "NOP"},
+};
+
+// 符号对应的symbol类型表
+const static std::map<char, SymType> ssym = {
+    {'+', SYM_PLUS},
+    {'-', SYM_MINUS},
+    {'*', SYM_TIMES},
+    {'/', SYM_SLASH},
+    {'<', SYM_LES},
+    {'>', SYM_GTR},
+    {';', SYM_SEMICOLON},
+    {',', SYM_COMMA},
+    {'.', SYM_PERIOD},
+    {'(', SYM_LPAREN},
+    {')', SYM_RPAREN},
+
+};
+
+// 保留字表
+static std::map<std::string, SymType> words = {
+    {"begin", SYM_BEGIN},
+    {"call", SYM_CALL},
+    {"const", SYM_CONST},
+    {"do", SYM_DO},
+    {"end", SYM_END},
+    {"if", SYM_IF},
+    {"odd", SYM_ODD},
+    {"procedure", SYM_PROCEDURE},
+    {"then", SYM_THEN},
+    {"var", SYM_VAR},
+    {"while", SYM_WHILE},
+};
 
 //extern unsigned long face_begsys; // factor开始符号集合
 
