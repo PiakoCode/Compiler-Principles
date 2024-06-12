@@ -319,7 +319,7 @@ void Block(std::set<SymType> syms) {
     tables[tx0].address = cx; // tx0的符号表存的是当前block的参数
     cx0 = cx;
     Gen(INT, 0, dx);
-    
+
     Statement(MergeSet(syms, CreateSet(SYM_SEMICOLON, SYM_END)));
 
     Gen(OPR, 0, 0); // return
@@ -508,7 +508,7 @@ void Condition(std::set<SymType> fsys) {
 
 // 声明处理
 
-void statement(std::set<SymType> fsys) {
+void Statement(std::set<SymType> fsys) {
     long i, cx1, cx2;
 
     if (sym == SYM_IDENTIFIER) { // 标识符
@@ -563,11 +563,11 @@ void statement(std::set<SymType> fsys) {
         cx1 = cx;
         // TODO 生成中间代码  gen(jpc,0,0);
 
-        statement(fsys); // 后面一个stament
+        Statement(fsys); // 后面一个stament
         codes[cx1].a = cx;
     } else if (sym == SYM_BEGIN) { // beign语句
         GetSym();
-        statement(MergeSet(fsys, CreateSet(SYM_SEMICOLON, SYM_END)));
+        Statement(MergeSet(fsys, CreateSet(SYM_SEMICOLON, SYM_END)));
         while ((sym == SYM_SEMICOLON) || (sym & SYM_END)) { // 处理分号和语句
             if (sym == SYM_SEMICOLON)                       // 分号
             {
@@ -575,7 +575,7 @@ void statement(std::set<SymType> fsys) {
             } else {
                 Error(10);
             }
-            statement(MergeSet(fsys, CreateSet(SYM_SEMICOLON, SYM_END)));
+            Statement(MergeSet(fsys, CreateSet(SYM_SEMICOLON, SYM_END)));
         }
 
         if (sym == SYM_END) {
@@ -596,7 +596,7 @@ void statement(std::set<SymType> fsys) {
         } else {
             Error(18);
         }
-        statement(fsys); // 后面是stmt
+        Statement(fsys); // 后面是stmt
 
         // TODO gen(jmp,0,cx1);  循环跳转
 
