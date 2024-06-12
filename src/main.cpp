@@ -36,16 +36,7 @@ int main(int argc, char *argv[]) {
     ch = ' ';
     GetSym();
 
-    std::set<SymType> tmp;
-    std::set_union(declare_sym.begin(),
-                   declare_sym.end(),
-                   start_sym.begin(),
-                   start_sym.end(),
-                   tmp);
-    std::set_union(
-        tmp.begin(), tmp.end(), declare_sym.begin(), declare_sym.end(), tmp);
-
-    Block(tmp);
+    Block(MergeSet(factor_sym, MergeSet(declare_sym, start_sym)));
 
     return 0;
 }

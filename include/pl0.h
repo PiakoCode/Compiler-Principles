@@ -241,7 +241,7 @@ void GetSym();
 /**
  * 判断单词是否匹配
  */
-void Test(unsigned long s1, unsigned long s2, long n);
+void Test(std::set<SymType> s1,std::set<SymType> s2, int n);
 
 /**
  * @brief
@@ -285,5 +285,5 @@ void VarDeclaration();
 /**
  * exp 处理
  */
-void Expression(unsigned long);
+void Expression(std::set<SymType> syms);
 #endif
