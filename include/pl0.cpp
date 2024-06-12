@@ -261,11 +261,10 @@ void Block(std::set<SymType> syms) {
         if (sym == SYM_VAR) { // 变量
             GetSym();
             do {
-                // TODO:变量声明
-
+                VarDeclaration();
                 while (sym == SYM_COMMA) { // 多个变量声明
                     GetSym();
-                    // TODO:变量声明
+                    VarDeclaration();
                 }
 
                 if (sym == SYM_SEMICOLON) {
@@ -277,25 +276,54 @@ void Block(std::set<SymType> syms) {
             } while (sym == SYM_IDENTIFIER);
         }
 
-        if (sym == SYM_PROCEDURE) { // 过程
+        while (sym == SYM_PROCEDURE) { // 过程
             GetSym();
-            do {
-                // TODO:过程声明
+            if (sym == SYM_IDENTIFIER) { // 标识符
+                Entry(ID_PROCEDURE);
+                GetSym();
+            } else {
+                Error(4);
+            }
 
-                while (sym == SYM_COMMA) { // 多个过程声明
-                    GetSym();
-                    // TODO:过程声明
-                }
+            if (sym == SYM_SEMICOLON) { // 分号
+                GetSym();
+            } else {
+                Error(5);
+            }
 
-                if (sym == SYM_SEMICOLON) {
-                    GetSym();
-                } else {
-                    Message("5");
-                }
-            } while (true);
+            level += 1; // 层数加一
+            tx1 = tx;   // 记录当前层级
+            dx1 = dx;   // 记录当前数据指针
+            Block(MergeSet(syms, CreateSet(SYM_SEMICOLON)));
+
+            level -= 1; // 层数减一
+            tx = tx1;
+            dx = dx1; // 恢复
+
+            if (sym == SYM_SEMICOLON) { // 分号
+                GetSym();
+                Test(MergeSet(start_sym,
+                              CreateSet(SYM_IDENTIFIER, SYM_PROCEDURE)),
+                     syms,
+                     6); // 检查当前 token 是否合法，不合法 则用 fsys
+                         // 恢复语法分析同时抛 6 号错
+            } else {
+                Error(5);
+            }
         }
+        Test(MergeSet(start_sym, CreateSet(SYM_IDENTIFIER)), declare_sym, 7);
 
-    } while (true);
+    } while (IsInSet(sym, declare_sym));
+
+    codes[tables[tx0].address].a = cx; // 把block开头写下的跳转指令的地址补上
+    tables[tx0].address = cx; // tx0的符号表存的是当前block的参数
+    cx0 = cx;
+    Gen(INT, 0, dx);
+    
+    Statement(MergeSet(syms, CreateSet(SYM_SEMICOLON, SYM_END)));
+
+    Gen(OPR, 0, 0); // return
+    Test(syms, std::set<SymType>{}, 8);
 }
 
 /**
@@ -570,10 +598,9 @@ void statement(std::set<SymType> fsys) {
         }
         statement(fsys); // 后面是stmt
 
-            // TODO gen(jmp,0,cx1);  循环跳转
+        // TODO gen(jmp,0,cx1);  循环跳转
 
-            codes[cx2]
-                .a = cx; // 将退出地址补上
+        codes[cx2].a = cx; // 将退出地址补上
     }
     Test(fsys, std::set<SymType>{}, 19);
 }

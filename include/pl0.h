@@ -62,6 +62,7 @@ enum IdType {
  */
 enum OpCode {
     LIT, // 将常数置于栈顶
+    OPR, // 执行运算
     LOD, // 将变量值置于栈顶
     STO, // 将栈顶的值赋与某变量
     CAL, // 用于过程调用的指令
@@ -214,6 +215,7 @@ const static std::string error_msg[] = {
     "",
     "Found ':=' when expecting '='.",
     "There must be a number to follow '='.",
+        "There must be an '=' to follow the identifier.",
     "There must be an identifier to follow 'const', 'var', or 'procedure'.",
     "Missing ',' or ';'.",
     // TODO: 添加更多error message
@@ -281,6 +283,8 @@ void Block(std::set<SymType> syms);
  * 变量声明
  */
 void VarDeclaration();
+
+
 
 /**
  * exp 处理
