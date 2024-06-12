@@ -112,13 +112,12 @@ struct Mask {
     int         address;
 };
 
-extern int  sym;         //
-extern char ch;          // 最近一次从文件中读出的字符
-extern int  cc;          // 在这一行的位置
-extern int  line_length; // 行长度
-extern int  error_cnt;   //
+extern SymType sym;         // 最近一次的token类型
+extern char    ch;          // 最近一次从文件中读出的字符
+extern int     cc;          // 在这一行中的位置
+extern int     line_length; // 行长度
+extern int     error_cnt;   //
 extern int cx; // 代码分配指针，代码生成模块总在cx所指的位置生成新代码
-extern char line[100]; // 行缓冲区
 
 extern int line_num; // 行号
 
