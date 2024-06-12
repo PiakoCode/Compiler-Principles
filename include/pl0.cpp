@@ -3,6 +3,7 @@
 #include "utils.h"
 #include <cctype>
 #include <cstdio>
+#include <vector>
 
 SymType sym = SYM_NULL;  // 最近一次的token类型
 char    ch = 0;          // 最近一次从文件中读出的字符
@@ -13,7 +14,8 @@ int cx = 0; // 代码分配指针，代码生成模块总在cx所指的位置生
 
 int line_num; // 行号
 
-std::vector<std::string> texts;
+std::vector<std::string> texts{};
+std::vector<Table>       tables{};
 
 void Error(int n) {
 
@@ -69,8 +71,11 @@ void GetSym() {
             Getch();
         }
 
-        // 变量 或 关键字 | aaa11    for
-        // TODO: 判断是变量还是关键字
+        if (words.count(token) != 0) { // 是关键字
+            sym = words[token];
+        } else { // 是变量
+            sym = SYM_IDENTIFIER;
+        }
 
     } else if (std::isdigit(ch)) { // 数字
 
@@ -82,7 +87,7 @@ void GetSym() {
             Getch();
         }
 
-        // 数字 | 12345
+        sym = SYM_NUMBER;
 
     } else if (ch == ':') {
         Getch();
@@ -91,7 +96,7 @@ void GetSym() {
             sym = SYM_BECOMES;
             Getch();
 
-        } else { // 不是赋值
+        } else {            // 不是赋值
             sym = SYM_NULL; // unknown
         }
     } else if (ch == '<') {
@@ -126,16 +131,15 @@ void GetSym() {
     }
 }
 
-
 // 测试当前单词是否合法
-void Test(unsigned long s1, unsigned long s2, long n) {
-   if(!(sym & s1))  {  // sym不在s1中
+void Test(unsigned long s1, unsigned long s2, int n) {
+    if (!(sym & s1)) { // sym不在s1中
         Error(n);
-        s1 = s1 | s2; // 将s2补充到s1中
+        s1 = s1 | s2;         // 将s2补充到s1中
         while (!(sym & s1)) { // 找到下一个合法字符
-           GetSym();
+            GetSym();
         }
-   }
+    }
 }
 
 
