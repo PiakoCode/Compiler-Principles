@@ -12,9 +12,15 @@ procedure multiply;
             end
     end;
 begin
+    
+    q:=m;
+    q := q+1;
     x:=m; y:=n;
     call multiply;
+    write(x);
+    q-=q;
     
+    write(q);
 end.
 
 

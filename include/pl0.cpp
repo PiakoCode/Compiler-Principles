@@ -463,9 +463,8 @@ void Term(std::set<SymType> fsys) {
  */
 void Expression(std::set<SymType> fsys) {
     SymType addop;
-    if (sym == SYM_PLUS || sym == SYM_MINUS || sym == SYM_PLUSEQ ||
-        sym == SYM_MINUSEQ) { // 处理 + - += -=
-        addop = sym;          // 保存当前符号
+    if (sym == SYM_PLUS || sym == SYM_MINUS) { // 处理 + -
+        addop = sym;                           // 保存当前符号
 
         GetSym();
         Term(MergeSet(fsys, CreateSet(SYM_PLUS, SYM_MINUS)));
@@ -474,27 +473,20 @@ void Expression(std::set<SymType> fsys) {
             Gen(OPR, 0, 1);
         }
     } else {
-        Term(MergeSet(fsys,
-                      CreateSet(SYM_PLUS, SYM_MINUS, SYM_MINUSEQ, SYM_PLUSEQ)));
+        Term(MergeSet(fsys, CreateSet(SYM_PLUS, SYM_MINUS)));
     }
 
-    while (sym == SYM_PLUS || sym == SYM_MINUS || sym == SYM_PLUSEQ ||
-           sym == SYM_MINUSEQ) { // 处理加减
+    while (sym == SYM_PLUS || sym == SYM_MINUS) { // 处理加减
         addop = sym;
         GetSym();
 
-        Term(MergeSet(fsys,
-                      CreateSet(SYM_PLUS, SYM_MINUS, SYM_MINUSEQ, SYM_PLUSEQ)));
+        Term(MergeSet(fsys, CreateSet(SYM_PLUS, SYM_MINUS)));
 
         if (addop == SYM_PLUS) {
             Gen(OPR, 0, 2); // 加
         } else if (addop == SYM_MINUS) {
 
             Gen(OPR, 0, 3); // 减
-        } else if (addop == SYM_PLUSEQ) {
-            Gen(OPR, 0, 15);
-        } else if (addop == SYM_MINUSEQ) {
-            Gen(OPR, 0, 17);
         }
     }
 }
@@ -574,15 +566,28 @@ void Statement(std::set<SymType> fsys) {
 
         if (sym == SYM_BECOMES) { // 若为赋值
             GetSym();
+
+            Expression(fsys);
+            if (i != 0) { // 产生一个sto代码
+                Gen(STO, level - tables[i].level, tables[i].address);
+            }
+        } else if (sym == SYM_MINUSEQ || sym == SYM_PLUSEQ) { // -= +=
+            auto tmp_sym = sym;
+            GetSym();
+            Gen(LOD,level - tables[i].level, tables[i].address);
+            Expression(fsys);
+            if (i != 0) {
+                if (tmp_sym == SYM_MINUSEQ) {
+                    Gen(OPR, 0, 17);
+                } else if (tmp_sym == SYM_PLUS) {
+                    Gen(OPR, 0, 15);
+                }
+                Gen(STO, level - tables[i].level, tables[i].address);
+            }
         } else {
             Error(13);
         }
 
-        Expression(fsys);
-
-        if (i != 0) { // 产生一个sto代码
-            Gen(STO, level - tables[i].level, tables[i].address);
-        }
     } else if (sym == SYM_CALL) { // call语句
         GetSym();
         if (sym != SYM_IDENTIFIER) {
@@ -799,15 +804,13 @@ void Interpret() {
                 printf("%4d\n", s[t]);
                 break;
             case 15: // +=
-                t = t - 1;
-                s[t] = s[t] + s[t + 1];
+                s[t] = s[t] + s[t - 1];
                 break;
             case 16: // ++
                 s[t] = s[t] + 1;
                 break;
             case 17: // -=
-                t = t - 1;
-                s[t] = s[t] - s[t + 1];
+                s[t] = s[t] - s[t - 1];
                 break;
             case 18:
                 s[t] = s[t] - 1;
