@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <new>
 #include <set>
 #include <string>
 #include <vector>
@@ -117,13 +116,13 @@ struct Instruction {
  */
 struct Table {
     std::string name;    // 符号名
-    IdType      kind;    // 符号类型
+    int      kind;    // 符号类型
     int         value;   // 符号值
     int         level;   // 层差/偏移地址
     int         address; // 地址
 };
 extern std::vector<Table> tables; // 符号表
-
+extern int s[10000];
 extern SymType sym;         // 最近一次的token类型
 extern char    ch;          // 最近一次从文件中读出的字符
 extern int     cc;          // 在这一行中的位置
@@ -296,11 +295,11 @@ void Expression(std::set<SymType> syms);
 void Statement(std::set<SymType> syms);
 
 
+// 通过静态链求出数据区基地址
+int Base(int b, int l);
 
 
-
-
-
+void Interpret();
 
 
 

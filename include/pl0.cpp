@@ -13,12 +13,12 @@ int     cc = 0;          // 在这一行的位置
 int     line_length = 0; // 行长度
 int     error_cnt = 0;
 int cx = 0; // 代码分配指针，代码生成模块总在cx所指的位置生成新代码
-
+int s[10000];
 int tx = 0; // 符号表分配指针，符号表模块总在tx所指的位置生成新符号
-
-int num = 0;   // 最近一次读入的数字
-int level = 0; // 层次
-int dx = 0;    // 层次中的偏移地址
+std::string id;
+int         num = 0;   // 最近一次读入的数字
+int         level = 0; // 层次
+int         dx = 0;    // 层次中的偏移地址
 
 int                      line_num; // 行号
 std::vector<Instruction> codes{};
@@ -331,7 +331,6 @@ void Block(std::set<SymType> syms) {
  */
 void VarDeclaration() {
     if (sym == SYM_IDENTIFIER) {
-        // TODO 将标识符记录到符号表中
         Entry(ID_VARIABLE);
         GetSym();
     } else {
@@ -354,30 +353,28 @@ void Factor(std::set<SymType> fsys) {
     while (IsInSet(sym, factor_sym)) { // 当sym在face_bgsys中
         if (sym == SYM_IDENTIFIER)     // 为标识符
         {
-            // TODO 查找符号表中对应的索引值    i = position(id);
-
+            i = Position(id);
             if (i == 0) { // 为找到标识符
                 Error(11);
             } else {
-                // TODO switch语句判断是否符号类型
-                //                switch(table[i].kind)
-                //                {
-                //                case constant: //常量
-                //                    gen(lit, 0, table[i].val);
-                //                    break;
-                //
-                //                case variable: //变量
-                //                    gen(lod, lev-table[i].level,
-                //                    table[i].addr); break;
-                //
-                //                case proc:     //过程
-                //                    error(21);
-                //                    break;
-                //                }
+
+                switch (tables[i].kind) {
+                case ID_CONSTANT: // 常量
+                    Gen(LIT, 0, tables[i].value);
+                    break;
+
+                case ID_VARIABLE: // 变量
+                    Gen(LOD, level - tables[i].level, tables[i].address);
+                    break;
+
+                case ID_PROCEDURE: // 过程
+                    Error(21);
+                    break;
+                }
             }
             GetSym();
         } else if (sym == SYM_NUMBER) { // 为数字
-            // TODO 运用中间代码函数写入到中间代码数组 gen(lit,0,num)
+
             Gen(LIT, 0, num);
             GetSym();
         } else if (sym == SYM_LPAREN) { // 为左括号
@@ -411,10 +408,10 @@ void Term(std::set<SymType> fsys) {
         Factor(MergeSet(fsys, CreateSet(SYM_TIMES, SYM_SLASH)));
 
         if (mulop == SYM_TIMES) { // 若为*
-            // TODO 生成乘法的中间代码    gen(opr,0,4);
 
+            Gen(OPR, 0, 4);
         } else {
-            // TODO 生成除法的中间代码   gen(opr,0,5);
+            Gen(OPR, 0, 5);
         }
     }
 }
@@ -431,7 +428,7 @@ void Expression(std::set<SymType> fsys) {
         Term(MergeSet(fsys, CreateSet(SYM_PLUS, SYM_MINUS)));
 
         if (addop == SYM_MINUS) { // 若为符号
-            // TODO 生成负号的中间代码    gen(opr,0,1);  负号，取反运算
+            Gen(OPR, 0, 1);
         }
     } else {
         Term(MergeSet(fsys, CreateSet(SYM_PLUS, SYM_MINUS)));
@@ -444,9 +441,9 @@ void Expression(std::set<SymType> fsys) {
         Term(MergeSet(fsys, CreateSet(SYM_PLUS, SYM_MINUS)));
 
         if (addop == SYM_PLUS) {
-            // TODO 生成加法的中间代码  gen(opr,0,2);          // 加
+            Gen(OPR, 0, 2); // 加
         } else {
-            // TODO 生成减法的中间代码   gen(opr,0,3);          // 减
+            Gen(OPR, 0, 3); // 减
         }
     }
 }
@@ -454,11 +451,11 @@ void Expression(std::set<SymType> fsys) {
 // cond 处理
 
 void Condition(std::set<SymType> fsys) {
-    unsigned long relop;
+    int relop;
     if (sym == SYM_ODD) { // 一元运算符
         GetSym();
         Expression(fsys);
-        // TODO 生成运算符的中间代码  gen(opr, 0, 6);
+        Gen(OPR, 0, 6);
 
     } else { // 二元运算符
         Expression(MergeSet(
@@ -475,33 +472,31 @@ void Condition(std::set<SymType> fsys) {
             GetSym();
             Expression(fsys); // 处理新的正负号
 
-            // TODO switch生成对应的中间代码
-            //            switch(relop)
-            //            {
-            //            case eql:
-            //                gen(opr, 0, 8);
-            //                break;
-            //
-            //            case neq:
-            //                gen(opr, 0, 9);
-            //                break;
-            //
-            //            case lss:
-            //                gen(opr, 0, 10);
-            //                break;
-            //
-            //            case geq:
-            //                gen(opr, 0, 11);
-            //                break;
-            //
-            //            case gtr:
-            //                gen(opr, 0, 12);
-            //                break;
-            //
-            //            case leq:
-            //                gen(opr, 0, 13);
-            //                break;
-            //            }
+            switch (relop) {
+            case EQL:
+                Gen(OPR, 0, 8);
+                break;
+
+            case NEQ:
+                Gen(OPR, 0, 9);
+                break;
+
+            case LES:
+                Gen(OPR, 0, 10);
+                break;
+
+            case GEQ:
+                Gen(OPR, 0, 11);
+                break;
+
+            case GTR:
+                Gen(OPR, 0, 12);
+                break;
+
+            case LEQ:
+                Gen(OPR, 0, 13);
+                break;
+            }
         }
     }
 }
@@ -512,7 +507,7 @@ void Statement(std::set<SymType> fsys) {
     long i, cx1, cx2;
 
     if (sym == SYM_IDENTIFIER) { // 标识符
-        // TODO 查找id在符号表对应的索引   i=position(id);
+        i = Position(id);
 
         if (i == 0) {
             Error(11);                          // 未定义错误
@@ -532,19 +527,19 @@ void Statement(std::set<SymType> fsys) {
         Expression(fsys);
 
         if (i != 0) { // 产生一个sto代码
-            // TODO  生成sto中间代码  gen(sto,lev-table[i].level,table[i].addr);
+            Gen(STO, level - tables[i].level, tables[i].address);
         }
     } else if (sym == SYM_CALL) { // call语句
         GetSym();
         if (sym != SYM_IDENTIFIER) {
             Error(14);
         } else {
-            // TODO id在符号表中的位置  i=position(id);
+            i = Position(id);
 
             if (i == 0) {
                 Error(11);
             } else if (tables[i].kind == SYM_PROCEDURE) { // 若为过程
-                // TODO 生成中间代码 gen(cal,lev-table[i].level,table[i].addr);
+                Gen(CAL, level - tables[i].level, tables[i].address);
 
             } else {
                 Error(15);
@@ -561,7 +556,7 @@ void Statement(std::set<SymType> fsys) {
             Error(16);
         }
         cx1 = cx;
-        // TODO 生成中间代码  gen(jpc,0,0);
+        Gen(JPC, 0, 0);
 
         Statement(fsys); // 后面一个stament
         codes[cx1].a = cx;
@@ -589,7 +584,7 @@ void Statement(std::set<SymType> fsys) {
         Condition(MergeSet(fsys, CreateSet(SYM_DO)));
         cx2 = cx; // 记录中间代码位置，要放退出地址
 
-        // TODO  gen(jpc,0,0);
+        Gen(JPC, 0, 0);
 
         if (sym == SYM_DO) { // do语句
             GetSym();
@@ -598,9 +593,146 @@ void Statement(std::set<SymType> fsys) {
         }
         Statement(fsys); // 后面是stmt
 
-        // TODO gen(jmp,0,cx1);  循环跳转
+        Gen(JMP, 0, cx1); //  循环跳转
 
         codes[cx2].a = cx; // 将退出地址补上
     }
     Test(fsys, std::set<SymType>{}, 19);
+}
+
+int Base(int b, int l) {
+    int b1;
+    b1 = b;
+
+    while (l > 0) {
+        b1 = s[b1];
+        l = l - 1;
+    }
+    return b1;
+}
+
+void Interpret() {
+    int p, b, t;   // 程序寄存器PC、基地址寄存器、栈顶寄存器
+    Instruction i; // 指令寄存器
+
+    printf("start PL/0\n");
+    t = 0;
+    b = 1;
+    p = 0;
+    s[1] = 0;
+    s[2] = 0;
+    s[3] = 0;
+
+    do {
+        i = codes[p];
+        p = p + 1; // 每次在code表中读取一条指令
+
+        switch (i.f) {
+        case LIT: // 常数指令
+            t = t + 1;
+            s[t] = i.a;
+            break;
+
+        case OPR: // 运算指令
+            switch (i.a) {
+            case 0: // 返回指令
+                t = b - 1;
+                p = s[t + 3];
+                b = s[t + 2];
+                break;
+
+            case 1: // 负号
+                s[t] = -s[t];
+                break;
+
+            case 2: // 加法
+                t = t - 1;
+                s[t] = s[t] + s[t + 1];
+                break;
+
+            case 3: // 减法
+                t = t - 1;
+                s[t] = s[t] - s[t + 1];
+                break;
+
+            case 4: // 乘法
+                t = t - 1;
+                s[t] = s[t] * s[t + 1];
+                break;
+
+            case 5: // 除法
+                t = t - 1;
+                s[t] = s[t] / s[t + 1];
+                break;
+
+            case 6: // odd
+                s[t] = s[t] % 2;
+                break;
+
+            case 8: // ==
+                t = t - 1;
+                s[t] = (s[t] == s[t + 1]);
+                break;
+
+            case 9: // !=
+                t = t - 1;
+                s[t] = (s[t] != s[t + 1]);
+                break;
+
+            case 10: // <
+                t = t - 1;
+                s[t] = (s[t] < s[t + 1]);
+                break;
+
+            case 11: // >=
+                t = t - 1;
+                s[t] = (s[t] >= s[t + 1]);
+                break;
+
+            case 12: // >
+                t = t - 1;
+                s[t] = (s[t] > s[t + 1]);
+                break;
+
+            case 13: // <=
+                t = t - 1;
+                s[t] = (s[t] <= s[t + 1]);
+            }
+            break;
+
+        case LOD: // 调用变量值指令
+            t = t + 1;
+            s[t] = s[Base(b, i.l) + i.a];
+            break;
+
+        case STO: // 将值存入变量指令
+            s[Base(b, i.l) + i.a] = s[t];
+            printf("%10d\n", s[t]);
+            t = t - 1;
+            break;
+
+        case CAL: // 过程调用，产生新的块标记
+            s[t + 1] = Base(b, i.l);
+            s[t + 2] = b;
+            s[t + 3] = p; // 记录返回地址等参数
+            b = t + 1;
+            p = i.a;
+            break;
+
+        case INT: // 开内存空间
+            t = t + i.a;
+            break;
+
+        case JMP: // 无条件跳转指令
+            p = i.a;
+            break;
+
+        case JPC: // 栈顶为0跳转
+            if (s[t] == 0) {
+                p = i.a;
+            }
+            t = t - 1;
+        }
+    } while (p != 0);
+    printf("end PL/0\n");
 }

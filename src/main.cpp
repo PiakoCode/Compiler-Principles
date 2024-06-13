@@ -38,5 +38,14 @@ int main(int argc, char *argv[]) {
 
     Block(MergeSet(factor_sym, MergeSet(declare_sym, start_sym)));
 
+    if (sym != SYM_PERIOD) // 点
+    {
+        Error(9);
+    }
+
+    //-------------语法分析完成
+
+    Interpret();
+
     return 0;
 }
