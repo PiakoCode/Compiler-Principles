@@ -5,11 +5,11 @@ procedure multiply;
     var a,b;
     begin
         a:=x; b:=y; z:=0;
-        while b>0 do
-            begin
-                if odd b then z:=z+a;
-                a:=2*a; b:=b/2;
-            end
+        var r;
+        for(r:=0; r<10; r++);
+        begin
+            z:=z+1;
+        end;
     end;
 begin
     
@@ -19,8 +19,13 @@ begin
     call multiply;
     write(x);
     q-=q;
-    
+    q++;
     write(q);
+    q--;
+    ++q;
+    --q;
+    write(q);
+    write(z);
 end.
 
 

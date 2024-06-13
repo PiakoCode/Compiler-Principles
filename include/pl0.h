@@ -45,6 +45,8 @@ enum SymType {
     SYM_ELSE,       // else
     SYM_THEN,       // then
     SYM_WHILE,      // while
+    SYM_FOR,        // for
+    SYM_TO,         // to
     SYM_DO,         // do
     SYM_CALL,       // call
     SYM_CONST,      // const
@@ -158,7 +160,7 @@ const static std::set<SymType> declare_sym = {
 
 // 表达式开始符号集合
 const static std::set<SymType> start_sym = {
-    SYM_BEGIN, SYM_CALL, SYM_WHILE, SYM_IF};
+    SYM_BEGIN, SYM_CALL, SYM_WHILE, SYM_IF,SYM_FOR,SYM_TO,SYM_DO};
 
 // factor开始符号集合
 const static std::set<SymType> factor_sym = {
@@ -208,6 +210,8 @@ static std::map<std::string, SymType> words = {
     {"var", SYM_VAR},
     {"while", SYM_WHILE},
     {"write", SYM_WRITE},
+    {"for",SYM_FOR},
+    {"to",SYM_TO},
 };
 
 // extern unsigned long face_begsys; // factor开始符号集合

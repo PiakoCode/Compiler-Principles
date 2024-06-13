@@ -550,7 +550,7 @@ void Condition(std::set<SymType> fsys) {
 // 声明处理
 
 void Statement(std::set<SymType> fsys) {
-    long i, cx1, cx2;
+    long i, cx1, cx2, cx3, cx4, cx5;
 
     if (sym == SYM_IDENTIFIER) { // 标识符
         i = Position(id);
@@ -574,17 +574,42 @@ void Statement(std::set<SymType> fsys) {
         } else if (sym == SYM_MINUSEQ || sym == SYM_PLUSEQ) { // -= +=
             auto tmp_sym = sym;
             GetSym();
-            Gen(LOD,level - tables[i].level, tables[i].address);
+            Gen(LOD, level - tables[i].level, tables[i].address);
             Expression(fsys);
             if (i != 0) {
                 if (tmp_sym == SYM_MINUSEQ) {
                     Gen(OPR, 0, 17);
-                } else if (tmp_sym == SYM_PLUS) {
+                } else if (tmp_sym == SYM_PLUSEQ) {
                     Gen(OPR, 0, 15);
                 }
                 Gen(STO, level - tables[i].level, tables[i].address);
             }
-        } else {
+        } else if (sym == SYM_PLUSPLUS) {
+            Gen(LIT, 0, 1);
+            Gen(LOD, level, tables[i].address);
+            Gen(OPR, 0, 2);
+            Gen(STO, level - tables[i].level, tables[i].address);
+            GetSym();
+        } else if (sym == SYM_MINUSMINUS) {
+            Gen(LOD, level, tables[i].address);
+            Gen(LIT, 0, -1);
+            Gen(OPR, 0, 3);
+            Gen(STO, level - tables[i].level, tables[i].address);
+            GetSym();
+        }
+        // TODO: 处理数组
+        //  else if (sym == SYM_LPAREN) {
+        //     GetSym();
+        //     if(sym != SYM_NUMBER) {
+        //         Error(8);
+        //     } else {
+        //       GetSym();
+        //       auto len_low
+        //       GetSym();
+        //       for(int )
+        //     }
+        // }
+        else {
             Error(13);
         }
 
@@ -655,7 +680,39 @@ void Statement(std::set<SymType> fsys) {
 
         Gen(JMP, 0, cx1); //  循环跳转
 
-        codes[cx2].a = cx;         // 将退出地址补上
+        codes[cx2].a = cx; // 将退出地址补上
+    } else if (sym == SYM_FOR) {
+        GetSym();
+        if (sym != SYM_LPAREN) {
+            Error(10);
+        } else {
+            cx1 = cx;
+            GetSym();
+            Condition(fsys);
+            if (sym != SYM_SEMICOLON) {
+                Error(10);
+            } else {
+                cx2 = cx;
+                Gen(JPC, 0, 0);
+                cx3 = cx;
+                Gen(JMP, 0, 0);
+                GetSym();
+                cx4 = cx;
+                Statement(fsys);
+                if (sym != SYM_RPAREN) {
+                    Error(22);
+                } else {
+                    Gen(JMP, 0, cx1);
+                    GetSym();
+                    cx5 = cx;
+                    Statement(fsys);
+                    codes[cx3].a = cx5;
+                    Gen(JMP, 0, cx4);
+                    codes[cx2].a = cx;
+                }
+            }
+        }
+
     } else if (sym == SYM_WRITE) { // write语句
         GetSym();
         if (sym == SYM_LPAREN) { // 右括号
@@ -684,6 +741,34 @@ void Statement(std::set<SymType> fsys) {
                 GetSym();
             }
         }
+    } else if (sym == SYM_PLUSPLUS) {
+        GetSym();
+        if (sym == SYM_IDENTIFIER) {
+            i = Position(id);
+            if (i == 0) {
+                Error(11);
+            } else if (tables[i].kind == SYM_VAR) {
+                Gen(LOD, level - tables[i].level, tables[i].address);
+                Gen(LIT, 0, 1);
+                Gen(OPR, 0, 2);
+                Gen(STO, level - tables[i].level, tables[i].address);
+            }
+        }
+        GetSym();
+    } else if (sym == SYM_MINUSMINUS) {
+        GetSym();
+        if (sym == SYM_IDENTIFIER) {
+            i = Position(id);
+            if (i == 0) {
+                Error(11);
+            } else if (tables[i].kind == SYM_VAR) {
+                Gen(LOD, level - tables[i].level, tables[i].address);
+                Gen(LIT, 0, 1);
+                Gen(OPR, 0, 3);
+                Gen(STO, level - tables[i].level, tables[i].address);
+            }
+        }
+        GetSym();
     }
 
     Test(fsys, std::set<SymType>{}, 8);
