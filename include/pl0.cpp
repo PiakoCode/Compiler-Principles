@@ -126,6 +126,34 @@ void GetSym() {
         } else { // 不是大于等于
             sym = SYM_GTR;
         }
+    } else if (ch == '+') {
+        Getch();
+
+        if (ch == '=') { // 是加等于
+            sym = SYM_PLUSEQ;
+            Getch();
+
+        } else if (ch == '+') { // 是自加
+            sym = SYM_PLUSPLUS;
+            Getch();
+        } else {
+            sym = SYM_PLUS;
+        }
+
+    } else if (ch == '-') {
+        Getch();
+
+        if (ch == '=') { // 是减等于
+            sym = SYM_MINUSEQ;
+            Getch();
+
+        } else if (ch == '-') { // 是自减
+            sym = SYM_MINUSMINUS;
+            Getch();
+        } else {
+            sym = SYM_MINUS;
+        }
+
     } else {
         sym = ssym[ch];
         Getch();
@@ -435,9 +463,10 @@ void Term(std::set<SymType> fsys) {
  */
 void Expression(std::set<SymType> fsys) {
     SymType addop;
-    if (sym == SYM_PLUS || sym == SYM_MINUS) { // 处理正负号
-        addop = sym;                           // 保存当前符号
-                                               // 存正负号
+    if (sym == SYM_PLUS || sym == SYM_MINUS || sym == SYM_PLUSEQ ||
+        sym == SYM_MINUSEQ) { // 处理 + - += -=
+        addop = sym;          // 保存当前符号
+
         GetSym();
         Term(MergeSet(fsys, CreateSet(SYM_PLUS, SYM_MINUS)));
 
@@ -445,19 +474,27 @@ void Expression(std::set<SymType> fsys) {
             Gen(OPR, 0, 1);
         }
     } else {
-        Term(MergeSet(fsys, CreateSet(SYM_PLUS, SYM_MINUS)));
+        Term(MergeSet(fsys,
+                      CreateSet(SYM_PLUS, SYM_MINUS, SYM_MINUSEQ, SYM_PLUSEQ)));
     }
 
-    while (sym == SYM_PLUS || sym == SYM_MINUS) { // 处理加减
+    while (sym == SYM_PLUS || sym == SYM_MINUS || sym == SYM_PLUSEQ ||
+           sym == SYM_MINUSEQ) { // 处理加减
         addop = sym;
         GetSym();
 
-        Term(MergeSet(fsys, CreateSet(SYM_PLUS, SYM_MINUS)));
+        Term(MergeSet(fsys,
+                      CreateSet(SYM_PLUS, SYM_MINUS, SYM_MINUSEQ, SYM_PLUSEQ)));
 
         if (addop == SYM_PLUS) {
             Gen(OPR, 0, 2); // 加
-        } else {
+        } else if (addop == SYM_MINUS) {
+
             Gen(OPR, 0, 3); // 减
+        } else if (addop == SYM_PLUSEQ) {
+            Gen(OPR, 0, 15);
+        } else if (addop == SYM_MINUSEQ) {
+            Gen(OPR, 0, 17);
         }
     }
 }
@@ -475,10 +512,15 @@ void Condition(std::set<SymType> fsys) {
         Expression(MergeSet(
             fsys,
             CreateSet(SYM_EQ, SYM_NEQ, SYM_GTR, SYM_LES, SYM_LEQ, SYM_GEQ)));
-        if (!(IsInSet(
-                sym,
-                CreateSet(
-                    SYM_EQ, SYM_NEQ, SYM_GTR, SYM_LES, SYM_LEQ, SYM_GEQ)))) {
+        if (!(IsInSet(sym,
+                      CreateSet(SYM_EQ,
+                                SYM_NEQ,
+                                SYM_GTR,
+                                SYM_LES,
+                                SYM_LEQ,
+                                SYM_GEQ,
+                                SYM_MINUSEQ,
+                                SYM_PLUSEQ)))) {
 
             Error(20);
         } else {
@@ -608,8 +650,37 @@ void Statement(std::set<SymType> fsys) {
 
         Gen(JMP, 0, cx1); //  循环跳转
 
-        codes[cx2].a = cx; // 将退出地址补上
+        codes[cx2].a = cx;         // 将退出地址补上
+    } else if (sym == SYM_WRITE) { // write语句
+        GetSym();
+        if (sym == SYM_LPAREN) { // 右括号
+            do {
+                GetSym();
+
+                if (sym == SYM_IDENTIFIER) { // 标识符
+                    i = Position(id);
+                    if (i == 0) {
+                        Error(11);
+                    } else if (tables[i].kind == SYM_VAR) { // 变量
+                        Gen(LOD, level - tables[i].level, tables[i].address);
+
+                        Gen(OPR, 0, 14);
+
+                    } else {
+                        Error(19);
+                    }
+                    GetSym();
+                }
+            } while (sym == SYM_COMMA);
+
+            if (sym != SYM_RPAREN) {
+                Error(33); // write() 中应为完整表达式
+            } else {
+                GetSym();
+            }
+        }
     }
+
     Test(fsys, std::set<SymType>{}, 8);
 }
 
@@ -723,7 +794,26 @@ void Interpret() {
             case 13: // <=
                 t = t - 1;
                 s[t] = (s[t] <= s[t + 1]);
+                break;
+            case 14: // write
+                printf("%4d\n", s[t]);
+                break;
+            case 15: // +=
+                t = t - 1;
+                s[t] = s[t] + s[t + 1];
+                break;
+            case 16: // ++
+                s[t] = s[t] + 1;
+                break;
+            case 17: // -=
+                t = t - 1;
+                s[t] = s[t] - s[t + 1];
+                break;
+            case 18:
+                s[t] = s[t] - 1;
+                break;
             }
+
             break;
 
         case LOD: // 调用变量值指令
@@ -733,7 +823,7 @@ void Interpret() {
 
         case STO: // 将值存入变量指令
             s[Base(b, i.l) + i.a] = s[t];
-            printf("%10d\n", s[t]);
+            // printf("%10d%10d\n", s[t],t);
             t = t - 1;
             break;
 
@@ -758,6 +848,7 @@ void Interpret() {
                 p = i.a;
             }
             t = t - 1;
+            break;
         }
     } while (p != 0);
     printf("end PL/0\n");

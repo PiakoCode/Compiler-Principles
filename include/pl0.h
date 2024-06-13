@@ -16,10 +16,16 @@ enum SymType {
     SYM_NULL,       // NULL
     SYM_IDENTIFIER, // 标识符
     SYM_NUMBER,     // 数字
+
     SYM_PLUS,       // +
+    SYM_PLUSEQ,     // +=
+    SYM_PLUSPLUS,   // ++
+    SYM_MINUSEQ,    // -=
+    SYM_MINUSMINUS, // --
     SYM_MINUS,      // -
     SYM_TIMES,      // *
     SYM_SLASH,      // /
+    
     SYM_ODD,        // 奇数
     SYM_EQ,         // ==
     SYM_NEQ,        // !=
@@ -44,6 +50,7 @@ enum SymType {
     SYM_CONST,      // const
     SYM_VAR,        // var
     SYM_PROCEDURE,  // procedure
+    SYM_WRITE,      // write
 };
 /**
  * @brief
@@ -69,6 +76,7 @@ enum OpCode {
     JMP, // 跳转
     JPC, // 跳转（条件）
     NOP, // 空操作
+    WRT, // 输出
 };
 
 /*  lit 0, a : load constant a
@@ -166,7 +174,7 @@ static std::map<OpCode, std::string> op_code_str = {
     {JMP, "JMP"},
     {JPC, "JPC"},
     {OPR, "OPR"},
-    {NOP, "NOP"},
+    {NOP, "NOP"}
 };
 
 // 符号对应的symbol类型表
@@ -199,6 +207,7 @@ static std::map<std::string, SymType> words = {
     {"then", SYM_THEN},
     {"var", SYM_VAR},
     {"while", SYM_WHILE},
+    {"write", SYM_WRITE},
 };
 
 // extern unsigned long face_begsys; // factor开始符号集合
@@ -305,11 +314,21 @@ void VarDeclaration();
  */
 void Expression(std::set<SymType> syms);
 
+/**
+ * @brief 
+ * 语句处理
+ * @param syms 
+ */
 void Statement(std::set<SymType> syms);
 
 // 通过静态链求出数据区基地址
 int Base(int b, int l);
 
+
+/**
+ * @brief 
+ * 解释器
+ */
 void Interpret();
 
 void Listcode(int cx0);

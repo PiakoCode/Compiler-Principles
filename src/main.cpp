@@ -43,9 +43,14 @@ int main(int argc, char *argv[]) {
         Error(9);
     }
 
-    //-------------语法分析完成
-    std::cout <<"INTERPRETER START"<<"\n";
-    Interpret();
+    //语法分析完成
+
+
+    if (error_cnt == 0) {
+        std::cout << "INTERPRETER START"
+                  << "\n";
+        Interpret();
+    }
 
     return 0;
 }
