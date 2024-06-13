@@ -25,12 +25,12 @@ std::vector<std::string> SplitString(const std::string &str,
     std::size_t end = str.find(delimiter);
 
     while (end != std::string::npos) {
-        tokens.emplace_back(str.substr(start, end - start));
-        start = end + delimiter.length();
+        tokens.emplace_back(str.substr(start, end - start)+"\n");
+        start = end + delimiter.length() ;
         end = str.find(delimiter, start);
     }
 
-    tokens.emplace_back(str.substr(start, end - start));
+    tokens.emplace_back(str.substr(start, end - start)+"\n");
 
     return tokens;
 }

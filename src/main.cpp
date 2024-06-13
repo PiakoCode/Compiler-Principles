@@ -18,8 +18,8 @@ int main(int argc, char *argv[]) {
         path = std::string(argv[1]);
     }
 
-    // // 读取程序文本内容
-    // texts = SplitString(ReadFile(path), "\n"); // 不会保留\n
+    // 读取程序文本内容
+    texts = SplitString(ReadFile(path), "\n");
 
     // // 输出程序文本内容
     // for (auto const &value : texts) {
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
     ch = ' ';
     GetSym();
 
-    Block(MergeSet(factor_sym, MergeSet(declare_sym, start_sym)));
+    Block(MergeSet(CreateSet(SYM_PERIOD), MergeSet(declare_sym, start_sym)));
 
     if (sym != SYM_PERIOD) // 点
     {
@@ -44,8 +44,8 @@ int main(int argc, char *argv[]) {
     }
 
     //-------------语法分析完成
-
-    Interpret();
+    std::cout <<"INTERPRETER START"<<"\n";
+    //Interpret();
 
     return 0;
 }

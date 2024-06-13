@@ -21,9 +21,9 @@ int         level = 0; // 层次
 int         dx = 0;    // 层次中的偏移地址
 
 int                      line_num; // 行号
-std::vector<Instruction> codes{};
-std::vector<std::string> texts{};
-std::vector<Table>       tables{};
+std::vector<Instruction> codes;
+std::vector<std::string> texts(1000);
+std::vector<Table>       tables(1000);
 
 void Error(int n) {
 
@@ -38,8 +38,8 @@ void Error(int n) {
 
 void Getch() {
 
-    while (cc + 1 >= texts[line_num].length()) { // 是否读完一行
-        if (line_num + 1 >= texts.size()) {      // 读取完整个文件
+    while (cc >= texts[line_num].length()) { // 是否读完一行
+        if (line_num + 1 >= texts.size()) {  // 读取完整个文件
             std::printf("%5d ", cx);
             std::cout << texts[line_num] << "\n";
 
@@ -51,15 +51,14 @@ void Getch() {
 
         // 下一行
 
-        std::printf("%5d ", cx);
+        std::printf("%5d ", line_num);
 
-        std::cout << texts[line_num] << "\n";
+        std::cout << texts[line_num];
         line_num++;
         cc = 0;
     }
 
     ch = texts[line_num][cc];
-
     cc++;
 }
 
@@ -81,10 +80,11 @@ void GetSym() {
 
         if (words.count(token) != 0) { // 是关键字
             sym = words[token];
+
         } else { // 是变量
             sym = SYM_IDENTIFIER;
         }
-
+        id = token;
     } else if (std::isdigit(ch)) { // 数字
 
         token.push_back(ch);
@@ -94,7 +94,7 @@ void GetSym() {
             token.push_back(ch);
             Getch();
         }
-
+        num = std::stoi(token);
         sym = SYM_NUMBER;
 
     } else if (ch == ':') {
@@ -126,16 +126,9 @@ void GetSym() {
         } else { // 不是大于等于
             sym = SYM_GTR;
         }
-    } else if (ch == '=') { // 是等于
+    } else {
+        sym = ssym[ch];
         Getch();
-
-        if (ch == '=') { // 是等于
-            sym = SYM_EQ;
-            Getch();
-
-        } else {            // 不是等于
-            sym = SYM_NULL; // unknown
-        }
     }
 }
 
@@ -165,28 +158,34 @@ void Gen(OpCode x, int a, int b) {
  */
 void Entry(IdType k) {
     tx++;
-    tables.push_back({id, k, 0, 0, 0});
+
+    SymType sym_type;
 
     switch (k) {
 
     case ID_CONSTANT: // 常量
         tables[tx].value = num;
+        sym_type = SYM_CONST;
         break;
 
     case ID_VARIABLE: // 变量
         tables[tx].level = level;
         tables[tx].address = dx;
+        sym_type = SYM_VAR;
         dx++;
         break;
 
     case ID_PROCEDURE: // 过程
         tables[tx].level = level;
+        sym_type = SYM_PROCEDURE;
+
         break;
     }
+    tables[tx] = {id, sym_type, 0, 0, 0};
 }
 
 int Position(const std::string &name) {
-    for (int i = 0; i < tx; i++) {
+    for (int i = 0; i <= tx; i++) {
         if (tables[i].name == name) {
             return i;
         }
@@ -252,7 +251,7 @@ void Block(std::set<SymType> syms) {
                 if (sym == SYM_SEMICOLON) { // 分号
                     GetSym();
                 } else {
-                    Message("5");
+                    Message("Error:5");
                 }
 
             } while (sym == SYM_IDENTIFIER);
@@ -270,7 +269,7 @@ void Block(std::set<SymType> syms) {
                 if (sym == SYM_SEMICOLON) {
                     GetSym();
                 } else {
-                    Message("5");
+                    Message("error: 5");
                 }
 
             } while (sym == SYM_IDENTIFIER);
@@ -324,6 +323,7 @@ void Block(std::set<SymType> syms) {
 
     Gen(OPR, 0, 0); // return
     Test(syms, std::set<SymType>{}, 8);
+    Listcode(cx0);
 }
 
 /**
@@ -359,15 +359,15 @@ void Factor(std::set<SymType> fsys) {
             } else {
 
                 switch (tables[i].kind) {
-                case ID_CONSTANT: // 常量
+                case SYM_CONST: // 常量
                     Gen(LIT, 0, tables[i].value);
                     break;
 
-                case ID_VARIABLE: // 变量
+                case SYM_VAR: // 变量
                     Gen(LOD, level - tables[i].level, tables[i].address);
                     break;
 
-                case ID_PROCEDURE: // 过程
+                case SYM_PROCEDURE: // 过程
                     Error(21);
                     break;
                 }
@@ -563,8 +563,9 @@ void Statement(std::set<SymType> fsys) {
     } else if (sym == SYM_BEGIN) { // beign语句
         GetSym();
         Statement(MergeSet(fsys, CreateSet(SYM_SEMICOLON, SYM_END)));
-        while ((sym == SYM_SEMICOLON) || (sym & SYM_END)) { // 处理分号和语句
-            if (sym == SYM_SEMICOLON)                       // 分号
+        while ((sym == SYM_SEMICOLON) ||
+               IsInSet(sym, start_sym)) { // 处理分号和语句
+            if (sym == SYM_SEMICOLON)     // 分号
             {
                 GetSym();
             } else {
@@ -597,7 +598,7 @@ void Statement(std::set<SymType> fsys) {
 
         codes[cx2].a = cx; // 将退出地址补上
     }
-    Test(fsys, std::set<SymType>{}, 19);
+    Test(fsys, std::set<SymType>{}, 8);
 }
 
 int Base(int b, int l) {
@@ -609,6 +610,19 @@ int Base(int b, int l) {
         l = l - 1;
     }
     return b1;
+}
+
+void Listcode(int cx0) // list code generated for this block
+{
+    int i;
+
+    for (i = cx0; i <= cx - 1; i++) {
+        printf("%10d%5s%3d%5d\n",
+               i,
+               op_code_str[codes[i].f].c_str(),
+               codes[i].l,
+               codes[i].a);
+    }
 }
 
 void Interpret() {

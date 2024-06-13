@@ -116,7 +116,7 @@ struct Instruction {
  */
 struct Table {
     std::string name;    // 符号名
-    int      kind;    // 符号类型
+    SymType      kind;    // 符号类型
     int         value;   // 符号值
     int         level;   // 层差/偏移地址
     int         address; // 地址
@@ -134,7 +134,7 @@ extern int tx; // 符号表分配指针，符号表模块总在tx所指的位置
 extern std::string id;    // 最近一次读入的id
 extern int         num;   // 最近一次读入的数字
 extern int         level; // 层次
-extern int         dx;    // 层次中的偏移地址
+extern int         dx;   // 层次中的偏移地址
 
 extern int                      line_num; // 行号
 extern std::vector<Instruction> codes;    // 中间代码列表
@@ -164,7 +164,7 @@ const static std::set<SymType> factor_sym = {
 };
 
 // 中间代码
-const static std::map<OpCode, std::string> op_code_str = {
+static std::map<OpCode, std::string> op_code_str = {
     {LIT, "LIT"},
     {LOD, "LOD"},
     {STO, "STO"},
@@ -176,7 +176,7 @@ const static std::map<OpCode, std::string> op_code_str = {
 };
 
 // 符号对应的symbol类型表
-const static std::map<char, SymType> ssym = {
+static std::map<char, SymType> ssym = {
     {'+', SYM_PLUS},
     {'-', SYM_MINUS},
     {'*', SYM_TIMES},
@@ -188,6 +188,7 @@ const static std::map<char, SymType> ssym = {
     {'.', SYM_PERIOD},
     {'(', SYM_LPAREN},
     {')', SYM_RPAREN},
+    {'=', SYM_EQ},
 
 };
 
@@ -301,7 +302,7 @@ int Base(int b, int l);
 
 void Interpret();
 
-
+void Listcode(int cx0);
 
 
 #endif
