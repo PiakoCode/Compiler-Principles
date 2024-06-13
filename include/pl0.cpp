@@ -181,7 +181,21 @@ void Entry(IdType k) {
 
         break;
     }
-    tables[tx] = {id, sym_type, 0, 0, 0};
+    tables[tx].name = id;
+    tables[tx].kind = sym_type;
+}
+
+/**
+ * @brief
+ * 符号表查找
+ */
+void Search(const std::string &name) {
+    for (int i = tx; i >= 0; i--) {
+        if (tables[i].name == name) {
+            return;
+        }
+    }
+    Error(5);
 }
 
 int Position(const std::string &name) {
@@ -484,12 +498,10 @@ void Condition(std::set<SymType> fsys) {
             case LES:
                 Gen(OPR, 0, 10);
                 break;
-
-            case GEQ:
+            case GTR:
                 Gen(OPR, 0, 11);
                 break;
-
-            case GTR:
+            case GEQ:
                 Gen(OPR, 0, 12);
                 break;
 

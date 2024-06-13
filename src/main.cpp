@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 
     //-------------语法分析完成
     std::cout <<"INTERPRETER START"<<"\n";
-    //Interpret();
+    Interpret();
 
     return 0;
 }

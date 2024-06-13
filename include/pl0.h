@@ -116,25 +116,25 @@ struct Instruction {
  */
 struct Table {
     std::string name;    // 符号名
-    SymType      kind;    // 符号类型
+    SymType     kind;    // 符号类型
     int         value;   // 符号值
     int         level;   // 层差/偏移地址
     int         address; // 地址
 };
 extern std::vector<Table> tables; // 符号表
-extern int s[10000];
-extern SymType sym;         // 最近一次的token类型
-extern char    ch;          // 最近一次从文件中读出的字符
-extern int     cc;          // 在这一行中的位置
-extern int     line_length; // 行长度
-extern int     error_cnt;   //
+extern int                s[10000];
+extern SymType            sym; // 最近一次的token类型
+extern char               ch;  // 最近一次从文件中读出的字符
+extern int                cc;  // 在这一行中的位置
+extern int                line_length; // 行长度
+extern int                error_cnt;   //
 extern int cx; // 代码分配指针，代码生成模块总在cx所指的位置生成新代码
 extern int tx; // 符号表分配指针，符号表模块总在tx所指的位置生成新符号
 
 extern std::string id;    // 最近一次读入的id
 extern int         num;   // 最近一次读入的数字
 extern int         level; // 层次
-extern int         dx;   // 层次中的偏移地址
+extern int         dx;    // 层次中的偏移地址
 
 extern int                      line_num; // 行号
 extern std::vector<Instruction> codes;    // 中间代码列表
@@ -150,18 +150,11 @@ const static std::set<SymType> declare_sym = {
 
 // 表达式开始符号集合
 const static std::set<SymType> start_sym = {
-    SYM_BEGIN,
-    SYM_CALL,
-    SYM_WHILE,
-    SYM_IF
-};
+    SYM_BEGIN, SYM_CALL, SYM_WHILE, SYM_IF};
 
 // factor开始符号集合
 const static std::set<SymType> factor_sym = {
-    SYM_IDENTIFIER,
-    SYM_NUMBER,
-    SYM_LPAREN
-};
+    SYM_IDENTIFIER, SYM_NUMBER, SYM_LPAREN};
 
 // 中间代码
 static std::map<OpCode, std::string> op_code_str = {
@@ -172,6 +165,7 @@ static std::map<OpCode, std::string> op_code_str = {
     {INT, "INT"},
     {JMP, "JMP"},
     {JPC, "JPC"},
+    {OPR, "OPR"},
     {NOP, "NOP"},
 };
 
@@ -207,15 +201,14 @@ static std::map<std::string, SymType> words = {
     {"while", SYM_WHILE},
 };
 
-//extern unsigned long face_begsys; // factor开始符号集合
-
+// extern unsigned long face_begsys; // factor开始符号集合
 
 // 错误信息
 const static std::string error_msg[] = {
     "",
     "Found ':=' when expecting '='.",
     "There must be a number to follow '='.",
-        "There must be an '=' to follow the identifier.",
+    "There must be an '=' to follow the identifier.",
     "There must be an identifier to follow 'const', 'var', or 'procedure'.",
     "Missing ',' or ';'.",
     // TODO: 添加更多error message
@@ -243,7 +236,7 @@ void GetSym();
 /**
  * 判断单词是否匹配
  */
-void Test(std::set<SymType> s1,std::set<SymType> s2, int n);
+void Test(std::set<SymType> s1, std::set<SymType> s2, int n);
 
 /**
  * @brief
@@ -274,35 +267,25 @@ int Position(const std::string &name);
  */
 void ConstDeclaration();
 
-
-
 void Block(std::set<SymType> syms);
-
 
 /**
  * 变量声明
  */
 void VarDeclaration();
 
-
-
 /**
  * exp 处理
  */
 void Expression(std::set<SymType> syms);
 
-
-
 void Statement(std::set<SymType> syms);
-
 
 // 通过静态链求出数据区基地址
 int Base(int b, int l);
 
-
 void Interpret();
 
 void Listcode(int cx0);
-
 
 #endif
