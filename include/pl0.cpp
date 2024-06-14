@@ -683,33 +683,39 @@ void Statement(std::set<SymType> fsys) {
         codes[cx2].a = cx; // 将退出地址补上
     } else if (sym == SYM_FOR) {
         GetSym();
-        if (sym != SYM_LPAREN) {
-            Error(10);
-        } else {
-            cx1 = cx;
+        if(sym == SYM_VAR) {
             GetSym();
-            Condition(fsys);
-            if (sym != SYM_SEMICOLON) {
-                Error(10);
-            } else {
-                cx2 = cx;
-                Gen(JPC, 0, 0);
-                cx3 = cx;
-                Gen(JMP, 0, 0);
+            // 将变量加载到栈顶,在通过statement进行become进行赋值
+            Factor(fsys);
+            // 获取to
+            GetSym();
+            if(sym == SYM_TO) {
+                // 中间代码的跳转起始位置
+                cx1 = cx;
+
                 GetSym();
-                cx4 = cx;
-                Statement(fsys);
-                if (sym != SYM_RPAREN) {
-                    Error(22);
-                } else {
-                    Gen(JMP, 0, cx1);
+                // 判断情况
+                Condition(fsys , CreateSet(SYM_DO));
+
+                // 当情况为假时,直接进行跳转
+                cx2=cx;
+                // 跳转的目的地址暂时为0，还不知道跳转目标在哪里
+                Gen(JPC,0,0);
+
+                // 处理执行语句
+                if(sym == SYM_DO) {
                     GetSym();
-                    cx5 = cx;
-                    Statement(fsys);
-                    codes[cx3].a = cx5;
-                    Gen(JMP, 0, cx4);
-                    codes[cx2].a = cx;
+                } else {
+                    Error(16);
                 }
+
+                Statement(fsys);
+
+                // 跳转到循环开始的位置
+                Gen(JMP,0,cx1);
+                // 将之前跳转指令的JPC目标地址修改为当前中间代码位置cx,即循环结束后的吓一跳指令的位置
+                codes[cx2].a = cx;
+
             }
         }
 
