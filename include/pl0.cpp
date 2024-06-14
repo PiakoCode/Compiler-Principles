@@ -521,25 +521,25 @@ void Condition(std::set<SymType> fsys) {
             Expression(fsys); // 处理新的正负号
 
             switch (relop) {
-            case EQL:
+            case SYM_EQ:
                 Gen(OPR, 0, 8);
                 break;
 
-            case NEQ:
+            case SYM_NEQ:
                 Gen(OPR, 0, 9);
                 break;
 
-            case LES:
+            case SYM_LES:
                 Gen(OPR, 0, 10);
                 break;
-            case GTR:
+            case SYM_GTR:
                 Gen(OPR, 0, 11);
                 break;
-            case GEQ:
+            case SYM_GEQ:
                 Gen(OPR, 0, 12);
                 break;
 
-            case LEQ:
+            case SYM_LEQ:
                 Gen(OPR, 0, 13);
                 break;
             }

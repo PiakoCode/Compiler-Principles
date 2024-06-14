@@ -5,9 +5,9 @@ procedure multiply;
     var a,b;
     begin
         a:=x; b:=y; z:=0;
-        for r:=1 to r>2 do;
+        for r:=1 to r>5 do;
         begin
-            z:=z+1;
+            z:=z+5;
         end
     end;
 begin
