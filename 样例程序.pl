@@ -5,11 +5,10 @@ procedure multiply;
     var a,b;
     begin
         a:=x; b:=y; z:=0;
-        var r;
         for(r:=0; r<10; r++);
         begin
             z:=z+1;
-        end;
+        end
     end;
 begin
     
