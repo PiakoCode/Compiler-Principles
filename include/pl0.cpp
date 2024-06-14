@@ -702,14 +702,14 @@ void Statement(std::set<SymType> fsys) {
                 }
             }
             // 获取to
-            GetSym();
+            // GetSym();
             if (sym == SYM_TO) {
                 // 中间代码的跳转起始位置
                 cx1 = cx;
 
                 GetSym();
                 // 判断情况
-                Condition(fsys , CreateSet(SYM_DO));
+                Condition(MergeSet(fsys , CreateSet(SYM_DO)));
 
                 // 当情况为假时,直接进行跳转
                 cx2=cx;
