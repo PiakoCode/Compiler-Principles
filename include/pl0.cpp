@@ -684,11 +684,23 @@ void Statement(std::set<SymType> fsys) {
     } else if (sym == SYM_FOR) {
         GetSym();
         if (sym == SYM_IDENTIFIER) {
+            i = Position(id);
+            if(i == 0) {
+                Error(11);
+            } else if(tables[i].kind != SYM_VAR) {
+                Error(12);
+                i = 0;
+            }
+
             GetSym();
-
-
             // 将变量加载到栈顶,在通过statement进行become进行赋值
-            Statement(fsys);
+            if(sym == SYM_BECOMES) { //若为赋值
+                GetSym();
+                Expression(fsys);
+                if(i != 0) { // 产生一个sto代码
+                    Gen(STO,level - tables[i].level,tables[i].address);
+                }
+            }
             // 获取to
             GetSym();
             if (sym == SYM_TO) {
@@ -697,15 +709,15 @@ void Statement(std::set<SymType> fsys) {
 
                 GetSym();
                 // 判断情况
-                Condition(MergeSet(fsys, CreateSet(SYM_DO)));
+                Condition(fsys , CreateSet(SYM_DO));
 
                 // 当情况为假时,直接进行跳转
-                cx2 = cx;
+                cx2=cx;
                 // 跳转的目的地址暂时为0，还不知道跳转目标在哪里
-                Gen(JPC, 0, 0);
+                Gen(JPC,0,0);
 
                 // 处理执行语句
-                if (sym == SYM_DO) {
+                if(sym == SYM_DO) {
                     GetSym();
                 } else {
                     Error(16);
@@ -714,9 +726,10 @@ void Statement(std::set<SymType> fsys) {
                 Statement(fsys);
 
                 // 跳转到循环开始的位置
-                Gen(JMP, 0, cx1);
+                Gen(JMP,0,cx1);
                 // 将之前跳转指令的JPC目标地址修改为当前中间代码位置cx,即循环结束后的吓一跳指令的位置
                 codes[cx2].a = cx;
+
             }
         }
 
