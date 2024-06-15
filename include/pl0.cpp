@@ -111,7 +111,7 @@ void GetSym() {
         Getch();
 
         if (ch == '=') { // 是小于等于
-            sym = SYM_LES;
+            sym = SYM_LEQ;
             Getch();
 
         } else { // 不是小于等于
@@ -724,6 +724,14 @@ void Statement(std::set<SymType> fsys) {
                 }
 
                 Statement(fsys);
+
+                // 手动增加循环变量
+                if(i != 0) {
+                    Gen(LOD, level - tables[i].level, tables[i].address);
+                    Gen(LIT,0,1);
+                    Gen(OPR,0,2);
+                    Gen(STO,level - tables[i].level, tables[i].address);
+                }
 
                 // 跳转到循环开始的位置
                 Gen(JMP,0,cx1);
