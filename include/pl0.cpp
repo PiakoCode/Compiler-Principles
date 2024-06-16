@@ -651,19 +651,41 @@ void Statement(std::set<SymType> fsys) {
             GetSym();
         }
     } else if (sym == SYM_IF) { // 若为if语句
+        // 判断是否成立
         GetSym();
         Condition(MergeSet(fsys, CreateSet(SYM_THEN, SYM_DO)));
+
+
 
         if (sym == SYM_THEN) {
             GetSym();
         } else {
             Error(16);
         }
+        // 生成跳转指令，跳转到else
         cx1 = cx;
         Gen(JPC, 0, 0);
 
         Statement(fsys); // 后面一个stament
-        codes[cx1].a = cx;
+
+        // 处理else部分
+        if(sym == SYM_ELSE) {
+            GetSym();
+
+            // 生成无条件跳转指令
+            cx2 = cx;
+            Gen(JMP,0,0);  // 生成无条件跳转指令，跳转目标暂时为0
+
+            // 修正then条件跳转目标地址
+            codes[cx1].a = cx;
+
+            // 解析else部分语句
+            Statement(fsys);
+            codes[cx2].a = cx; // 修正无条件目标的目标地址为整个if-else语句的结束位置
+
+        } else {
+            codes[cx1].a = cx;
+        }
     } else if (sym == SYM_BEGIN) { // beign语句
         GetSym();
         Statement(MergeSet(fsys, CreateSet(SYM_SEMICOLON, SYM_END)));

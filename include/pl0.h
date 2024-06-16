@@ -165,7 +165,7 @@ const static std::set<SymType> declare_sym = {
 
 // 表达式开始符号集合
 const static std::set<SymType> start_sym = {
-    SYM_BEGIN, SYM_CALL, SYM_WHILE, SYM_IF, SYM_FOR, SYM_TO, SYM_DO,SYM_DOWNTO};
+    SYM_BEGIN, SYM_CALL, SYM_WHILE, SYM_IF, SYM_FOR, SYM_TO, SYM_DO,SYM_DOWNTO,SYM_ELSE};
 
 // factor开始符号集合
 const static std::set<SymType> factor_sym = {
@@ -216,7 +216,8 @@ static std::map<std::string, SymType> words = {
     {"write", SYM_WRITE},
     {"for", SYM_FOR},
     {"to", SYM_TO},
-    {"downto", SYM_DOWNTO}
+    {"downto", SYM_DOWNTO},
+    {"else",SYM_ELSE}
 };
 
 // extern unsigned long face_begsys; // factor开始符号集合
