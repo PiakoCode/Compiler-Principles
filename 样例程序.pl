@@ -9,10 +9,37 @@ procedure multiply;
         begin
             z:=z+1000;
             write(z);
-        end
+        end;
+
+        if z > 400 then z:=0;
+
     end;
+
+
+procedure test;
+    var a,b,c,e,d;
+    begin
+        
+        a:=2; b:=3;
+        while a>3 do
+        begin
+            c:=a;
+            while c>0 do
+            begin
+                c:=c-1;
+                b:=b+1;
+            end;
+            a:=a+1;
+        end;
+        write(a);
+        write(b);
+        write(c);
+    end;
+
+
+
 begin
-    
+    call test;
     q:=m;
     q := q+1;
     x:=m; y:=n;
