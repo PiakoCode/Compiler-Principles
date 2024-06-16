@@ -48,7 +48,7 @@ enum SymType {
     SYM_FOR,       // for
     SYM_TO,        // to
     SYM_DO,        // do
-    SYM_DOWNTO    // downto
+    SYM_DOWNTO,    // downto
     SYM_CALL,      // call
     SYM_CONST,     // const
     SYM_VAR,       // var
