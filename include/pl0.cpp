@@ -757,39 +757,40 @@ void Statement(std::set<SymType> fsys) {
                 Gen(JMP, 0, cx1);
                 // 将之前跳转指令的JPC目标地址修改为当前中间代码位置cx,即循环结束后的吓一跳指令的位置
                 codes[cx2].a = cx;
-            } else if(sym == SYM_DOWNTO) { // 获取downto
-                 // 中间代码的跳转起始位置
-                 cx1 = cx;
-                 GetSym();
-                 // 判断情况
-                 Condition(MergeSet(fsys, CreateSet(SYM_DO)));
+            } else if (sym == SYM_DOWNTO) { // 获取downto
+                // 中间代码的跳转起始位置
+                cx1 = cx;
+                GetSym();
+                // 判断情况
+                Condition(MergeSet(fsys, CreateSet(SYM_DO)));
 
-                 // 当情况为假时,直接进行跳转
-                 cx2 = cx;
-                 // 跳转的目的地址暂时为0，还不知道跳转目标在哪里
-                 Gen(JPC, 0, 0);
+                // 当情况为假时,直接进行跳转
+                cx2 = cx;
+                // 跳转的目的地址暂时为0，还不知道跳转目标在哪里
+                Gen(JPC, 0, 0);
 
-                 // 处理执行do语句
-                 if (sym == SYM_DO) {
-                     GetSym();
-                 } else {
-                     Error(16);
-                 }
+                // 处理执行do语句
+                if (sym == SYM_DO) {
+                    GetSym();
+                } else {
+                    Error(16);
+                }
 
-                 Statement(fsys);
+                Statement(fsys);
 
-                 // 手动增加循环变量
-                 if (i != 0) {
-                     Gen(LOD, level - tables[i].level, tables[i].address);
-                     Gen(LIT, 0, 1);
-                     Gen(OPR, 0, 3);
-                     Gen(STO, level - tables[i].level, tables[i].address);
-                 }
+                // 手动增加循环变量
+                if (i != 0) {
 
-                 // 跳转到循环开始的位置
-                 Gen(JMP, 0, cx1);
-                 // 将之前跳转指令的JPC目标地址修改为当前中间代码位置cx,即循环结束后的吓一跳指令的位置
-                 codes[cx2].a = cx;
+                    Gen(LOD, level - tables[i].level, tables[i].address);
+                    Gen(LIT, 0, 1);
+                    Gen(OPR, 0, 3);
+                    Gen(STO, level - tables[i].level, tables[i].address);
+                }
+
+                // 跳转到循环开始的位置
+                Gen(JMP, 0, cx1);
+                // 将之前跳转指令的JPC目标地址修改为当前中间代码位置cx,即循环结束后的吓一跳指令的位置
+                codes[cx2].a = cx;
             }
         }
 

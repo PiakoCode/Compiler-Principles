@@ -5,9 +5,10 @@ procedure multiply;
     var a,b;
     begin
         a:=x; b:=y; z:=0;
-        for r:=1 to r<5 do
+        for r:=5 downto r>2 do
         begin
-            z:=z+5;
+            z:=z+1000;
+            write(z);
         end
     end;
 begin
@@ -18,7 +19,7 @@ begin
     call multiply;
     write(t[1]);
     t[1]:=1000;
-    write(t[10]);
+    write(t[1]);
     q-=q;
     q++;
     write(q);
