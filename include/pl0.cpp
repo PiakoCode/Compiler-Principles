@@ -667,7 +667,7 @@ void Statement(std::set<SymType> fsys) {
         Gen(JPC, 0, 0);
 
         Statement(fsys); // 后面一个stament
-
+        GetSym();
         // 处理else部分
         if(sym == SYM_ELSE) {
             GetSym();
@@ -685,6 +685,7 @@ void Statement(std::set<SymType> fsys) {
 
         } else {
             codes[cx1].a = cx;
+            GetSym();
         }
     } else if (sym == SYM_BEGIN) { // beign语句
         GetSym();

@@ -1,7 +1,7 @@
 const m=7, n=85;
 var x,y,z,q,r,t<10>;
 
-procedure multiply;
+procedure add;
     var a,b;
     begin
         a:=x; b:=y; z:=0;
@@ -12,6 +12,7 @@ procedure multiply;
         end;
 
         if z > 400 then z:=0;
+        else z:=1;
 
     end;
 
@@ -43,7 +44,7 @@ begin
     q:=m;
     q := q+1;
     x:=m; y:=n;
-    call multiply;
+    call add;
     write(t[1]);
     t[1]:=1000;
     write(t[1]);
