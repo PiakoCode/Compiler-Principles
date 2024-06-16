@@ -5,6 +5,7 @@
 #include <cstdio>
 
 #include <set>
+#include <string>
 #include <vector>
 
 SymType sym = SYM_NULL;  // 最近一次的token类型
@@ -33,6 +34,11 @@ void Error(int n) {
     }
     std::printf("\n");
     std::printf("Error %3d: %s\n", n, error_msg[n].c_str());
+    error_cnt++;
+}
+
+void Error(const char *msg) {
+    std::printf("%s\n", msg);
     error_cnt++;
 }
 
@@ -73,7 +79,7 @@ void GetSym() {
 
         token.push_back(ch);
         Getch();
-        while (std::isalpha(ch) || std::isdigit(ch)) {
+        while (std::isalpha(ch) || std::isdigit(ch) || ch == '[' || ch == ']') {
             token.push_back(ch);
             Getch();
         }
@@ -206,7 +212,6 @@ void Entry(IdType k) {
     case ID_PROCEDURE: // 过程
         tables[tx].level = level;
         sym_type = SYM_PROCEDURE;
-
         break;
     }
     tables[tx].name = id;
@@ -265,10 +270,10 @@ void ConstDeclaration() {
 
 void Block(std::set<SymType> syms) {
 
-    long tx0;
-    long cx0;
-    long tx1;
-    long dx1;
+    int tx0;
+    int cx0;
+    int tx1;
+    int dx1;
 
     dx = 3;
     // 地址寄存器给出每层局部量当前已分配到的相对位置
@@ -293,7 +298,7 @@ void Block(std::set<SymType> syms) {
                 if (sym == SYM_SEMICOLON) { // 分号
                     GetSym();
                 } else {
-                    Message("Error:5");
+                    Error(5);
                 }
 
             } while (sym == SYM_IDENTIFIER);
@@ -311,7 +316,7 @@ void Block(std::set<SymType> syms) {
                 if (sym == SYM_SEMICOLON) {
                     GetSym();
                 } else {
-                    Message("error: 5");
+                    Error(5);
                 }
 
             } while (sym == SYM_IDENTIFIER);
@@ -373,8 +378,34 @@ void Block(std::set<SymType> syms) {
  */
 void VarDeclaration() {
     if (sym == SYM_IDENTIFIER) {
-        Entry(ID_VARIABLE);
-        GetSym();
+        if (ch == '<') { // 数组
+            GetSym();
+            GetSym();
+            if (sym == SYM_NUMBER) {
+                int length = num; // 数组长度
+                GetSym();
+                if (length == 0) {
+                    Error("Error: array length can't be 0.");
+                } else if (sym == SYM_GTR) {
+                    auto tmp_name = id;
+                    // Entry array 将数组写入符号表
+                    for (int tmp = 0; tmp < length; tmp++) {
+                        id = tmp_name + "[" + std::to_string(tmp) + "]";
+                        Entry(ID_VARIABLE);
+                    }
+                    GetSym();
+                } else {
+                    Error("Error: array declaration need '>'\n");
+                }
+
+            } else {
+                Error("Error: array need a length.");
+            }
+        } else {
+            Entry(ID_VARIABLE);
+            GetSym();
+        }
+
     } else {
         Error(4);
     }
@@ -388,7 +419,7 @@ void VarDeclaration() {
  * factor处理 生成中间代码
  */
 void Factor(std::set<SymType> fsys) {
-    long i;
+    int i;
     Test(factor_sym, fsys, 24); // 检查当前token是否在factor_sym集合中
                                 // 若不合法，抛错误，并通过fsys集合恢复护法处理
 
@@ -550,7 +581,7 @@ void Condition(std::set<SymType> fsys) {
 // 声明处理
 
 void Statement(std::set<SymType> fsys) {
-    long i, cx1, cx2, cx3, cx4, cx5;
+    int i, cx1, cx2, cx3, cx4, cx5;
 
     if (sym == SYM_IDENTIFIER) { // 标识符
         i = Position(id);
@@ -597,18 +628,7 @@ void Statement(std::set<SymType> fsys) {
             Gen(STO, level - tables[i].level, tables[i].address);
             GetSym();
         }
-        // TODO: 处理数组
-        //  else if (sym == SYM_LPAREN) {
-        //     GetSym();
-        //     if(sym != SYM_NUMBER) {
-        //         Error(8);
-        //     } else {
-        //       GetSym();
-        //       auto len_low
-        //       GetSym();
-        //       for(int )
-        //     }
-        // }
+
         else {
             Error(13);
         }
@@ -685,20 +705,20 @@ void Statement(std::set<SymType> fsys) {
         GetSym();
         if (sym == SYM_IDENTIFIER) {
             i = Position(id);
-            if(i == 0) {
+            if (i == 0) {
                 Error(11);
-            } else if(tables[i].kind != SYM_VAR) {
+            } else if (tables[i].kind != SYM_VAR) {
                 Error(12);
                 i = 0;
             }
 
             GetSym();
             // 将变量加载到栈顶,在通过statement进行become进行赋值
-            if(sym == SYM_BECOMES) { //若为赋值
+            if (sym == SYM_BECOMES) { // 若为赋值
                 GetSym();
                 Expression(fsys);
-                if(i != 0) { // 产生一个sto代码
-                    Gen(STO,level - tables[i].level,tables[i].address);
+                if (i != 0) { // 产生一个sto代码
+                    Gen(STO, level - tables[i].level, tables[i].address);
                 }
             }
             // 获取to
@@ -709,15 +729,15 @@ void Statement(std::set<SymType> fsys) {
 
                 GetSym();
                 // 判断情况
-                Condition(MergeSet(fsys , CreateSet(SYM_DO)));
+                Condition(MergeSet(fsys, CreateSet(SYM_DO)));
 
                 // 当情况为假时,直接进行跳转
-                cx2=cx;
+                cx2 = cx;
                 // 跳转的目的地址暂时为0，还不知道跳转目标在哪里
-                Gen(JPC,0,0);
+                Gen(JPC, 0, 0);
 
                 // 处理执行语句
-                if(sym == SYM_DO) {
+                if (sym == SYM_DO) {
                     GetSym();
                 } else {
                     Error(16);
@@ -726,18 +746,17 @@ void Statement(std::set<SymType> fsys) {
                 Statement(fsys);
 
                 // 手动增加循环变量
-                if(i != 0) {
+                if (i != 0) {
                     Gen(LOD, level - tables[i].level, tables[i].address);
-                    Gen(LIT,0,1);
-                    Gen(OPR,0,2);
-                    Gen(STO,level - tables[i].level, tables[i].address);
+                    Gen(LIT, 0, 1);
+                    Gen(OPR, 0, 2);
+                    Gen(STO, level - tables[i].level, tables[i].address);
                 }
 
                 // 跳转到循环开始的位置
-                Gen(JMP,0,cx1);
+                Gen(JMP, 0, cx1);
                 // 将之前跳转指令的JPC目标地址修改为当前中间代码位置cx,即循环结束后的吓一跳指令的位置
                 codes[cx2].a = cx;
-
             }
         }
 
@@ -747,20 +766,18 @@ void Statement(std::set<SymType> fsys) {
             do {
                 GetSym();
 
-                if (sym == SYM_IDENTIFIER) { // 标识符
-                    i = Position(id);
-                    if (i == 0) {
-                        Error(11);
-                    } else if (tables[i].kind == SYM_VAR) { // 变量
-                        Gen(LOD, level - tables[i].level, tables[i].address);
+                i = Position(id);
+                if (i == 0) {
+                    Error(11);
+                } else if (tables[i].kind == SYM_VAR) { // 变量
+                    Gen(LOD, level - tables[i].level, tables[i].address);
 
-                        Gen(OPR, 0, 14);
+                    Gen(OPR, 0, 14);
 
-                    } else {
-                        Error(19);
-                    }
-                    GetSym();
+                } else {
+                    Error(19);
                 }
+                GetSym();
             } while (sym == SYM_COMMA);
 
             if (sym != SYM_RPAREN) {

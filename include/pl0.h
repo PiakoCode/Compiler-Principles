@@ -25,34 +25,38 @@ enum SymType {
     SYM_MINUS,      // -
     SYM_TIMES,      // *
     SYM_SLASH,      // /
-    
-    SYM_ODD,        // 奇数
-    SYM_EQ,         // ==
-    SYM_NEQ,        // !=
-    SYM_LES,        // <
-    SYM_LEQ,        // <=
-    SYM_GTR,        // >
-    SYM_GEQ,        // >=
-    SYM_LPAREN,     // (
-    SYM_RPAREN,     // )
-    SYM_COMMA,      // ,
-    SYM_SEMICOLON,  // ;
-    SYM_PERIOD,     // .
-    SYM_BECOMES,    // :=
-    SYM_BEGIN,      // 开始 begin
-    SYM_END,        // 结束 end
-    SYM_IF,         // if
-    SYM_ELSE,       // else
-    SYM_THEN,       // then
-    SYM_WHILE,      // while
-    SYM_FOR,        // for
-    SYM_TO,         // to
-    SYM_DO,         // do
-    SYM_CALL,       // call
-    SYM_CONST,      // const
-    SYM_VAR,        // var
-    SYM_PROCEDURE,  // procedure
-    SYM_WRITE,      // write
+
+    SYM_ODD,       // 奇数
+    SYM_EQ,        // ==
+    SYM_NEQ,       // !=
+    SYM_LES,       // <
+    SYM_LEQ,       // <=
+    SYM_GTR,       // >
+    SYM_GEQ,       // >=
+    SYM_LPAREN,    // (
+    SYM_RPAREN,    // )
+    SYM_COMMA,     // ,
+    SYM_SEMICOLON, // ;
+    SYM_PERIOD,    // .
+    SYM_BECOMES,   // :=
+    SYM_BEGIN,     // 开始 begin
+    SYM_END,       // 结束 end
+    SYM_IF,        // if
+    SYM_ELSE,      // else
+    SYM_THEN,      // then
+    SYM_WHILE,     // while
+    SYM_FOR,       // for
+    SYM_TO,        // to
+    SYM_DO,        // do
+    SYM_CALL,      // call
+    SYM_CONST,     // const
+    SYM_VAR,       // var
+    SYM_PROCEDURE, // procedure
+    SYM_WRITE,     // write
+    SYM_LBRACKET,  // [
+    SYM_RBRACKET,  // ]
+    SYM_ARRAY,     // array
+
 };
 /**
  * @brief
@@ -160,24 +164,22 @@ const static std::set<SymType> declare_sym = {
 
 // 表达式开始符号集合
 const static std::set<SymType> start_sym = {
-    SYM_BEGIN, SYM_CALL, SYM_WHILE, SYM_IF,SYM_FOR,SYM_TO,SYM_DO};
+    SYM_BEGIN, SYM_CALL, SYM_WHILE, SYM_IF, SYM_FOR, SYM_TO, SYM_DO};
 
 // factor开始符号集合
 const static std::set<SymType> factor_sym = {
     SYM_IDENTIFIER, SYM_NUMBER, SYM_LPAREN};
 
 // 中间代码
-static std::map<OpCode, std::string> op_code_str = {
-    {LIT, "LIT"},
-    {LOD, "LOD"},
-    {STO, "STO"},
-    {CAL, "CAL"},
-    {INT, "INT"},
-    {JMP, "JMP"},
-    {JPC, "JPC"},
-    {OPR, "OPR"},
-    {NOP, "NOP"}
-};
+static std::map<OpCode, std::string> op_code_str = {{LIT, "LIT"},
+                                                    {LOD, "LOD"},
+                                                    {STO, "STO"},
+                                                    {CAL, "CAL"},
+                                                    {INT, "INT"},
+                                                    {JMP, "JMP"},
+                                                    {JPC, "JPC"},
+                                                    {OPR, "OPR"},
+                                                    {NOP, "NOP"}};
 
 // 符号对应的symbol类型表
 static std::map<char, SymType> ssym = {
@@ -193,7 +195,8 @@ static std::map<char, SymType> ssym = {
     {'(', SYM_LPAREN},
     {')', SYM_RPAREN},
     {'=', SYM_EQ},
-
+    {'[', SYM_LBRACKET},
+    {']', SYM_RBRACKET},
 };
 
 // 保留字表
@@ -210,8 +213,8 @@ static std::map<std::string, SymType> words = {
     {"var", SYM_VAR},
     {"while", SYM_WHILE},
     {"write", SYM_WRITE},
-    {"for",SYM_FOR},
-    {"to",SYM_TO},
+    {"for", SYM_FOR},
+    {"to", SYM_TO},
 };
 
 // extern unsigned long face_begsys; // factor开始符号集合
@@ -250,8 +253,7 @@ const static std::string error_msg[] = {
     "",
     "",
     "The number is too great.",
-    "There are too many levels."
-};
+    "There are too many levels."};
 
 /**
  * @brief
@@ -259,6 +261,8 @@ const static std::string error_msg[] = {
  * @param 错误类型
  */
 void Error(int n);
+
+void Error(const char *);
 
 /**
  * @brief
@@ -319,18 +323,17 @@ void VarDeclaration();
 void Expression(std::set<SymType> syms);
 
 /**
- * @brief 
+ * @brief
  * 语句处理
- * @param syms 
+ * @param syms
  */
 void Statement(std::set<SymType> syms);
 
 // 通过静态链求出数据区基地址
 int Base(int b, int l);
 
-
 /**
- * @brief 
+ * @brief
  * 解释器
  */
 void Interpret();
